@@ -1,81 +1,66 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="utf-8">
-    <title>История запросов</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body class="container py-4">
+{% extends "base.html" %}
+{% block title %}История логов{% endblock %}
 
-    <h1 class="mb-4">История запросов</h1>
+{% block content %}
+  <h2 class="mb-4">История логов</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
-    {% if logs %}
-      <table class="table table-striped table-hover">
-        <thead>
+  {% if logs and logs|length > 0 %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-dark">
           <tr>
-            <th>ID</th>
-            <th>Действие</th>
-            <th>Хост</th>
-            <th>Статус</th>
-            <th>Дата</th>
-            <th>Действия</th>
+            <th scope="col">ID</th>
+            <th scope="col">Время</th>
+            <th scope="col">Действие</th>
+            <th scope="col">Хост</th>
+            <th scope="col">Статус</th>
+            <th scope="col" class="text-end">Действия</th>
           </tr>
         </thead>
         <tbody>
           {% for log in logs %}
-            <tr>
-              <td>{{ log.id }}</td>
-              <td>{{ log.action }}</td>
-              <td>{{ log.host }}</td>
-              <td>
-                {% if log.status == "ok" %}
-                  <span class="badge bg-success">OK</span>
-                {% elif log.status == "warn" %}
-                  <span class="badge bg-warning text-dark">WARN</span>
-                {% elif log.status == "error" %}
-                  <span class="badge bg-danger">ERROR</span>
-                {% else %}
-                  <span class="badge bg-secondary">{{ log.status }}</span>
-                {% endif %}
-              </td>
-              <td>{{ log.timestamp }}</td>
-              <td>
-                <a href="{{ url_for('history_detail', log_id=log.id) }}" class="btn btn-sm btn-primary">
-                  Подробнее
-                </a>
-                <form method="post" action="{{ url_for('del_log_history', log_id=log.id) }}" style="display:inline;">
-                  <button type="submit" class="btn btn-sm btn-danger">
-                    Удалить
-                  </button>
-                </form>
-              </td>
-            </tr>
+          <tr>
+            <td>{{ log[0] }}</td>
+            <td>{{ log[1] }}</td>
+            <td>{{ log[2] }}</td>
+            <td>{{ log[3] }}</td>
+            <td>
+              {% if log[5] == "ok" %}
+                <span class="badge bg-success">OK</span>
+              {% elif log[5] == "warn" %}
+                <span class="badge bg-warning text-dark">WARN</span>
+              {% else %}
+                <span class="badge bg-danger">ERROR</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('history_detail', log_id=log[0]) }}" class="btn btn-sm btn-outline-info">
+                Детали
+              </a>
+              <form action="{{ url_for('del_log_history', log_id=log[0]) }}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Удалить лог #{{ log[0] }}?')">
+                  Удалить
+                </button>
+              </form>
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
+    </div>
 
-      <form method="post" action="{{ url_for('delete_history') }}">
-        <button type="submit" class="btn btn-danger">
-          🗑 Очистить всю историю
-        </button>
-      </form>
-    {% else %}
-      <div class="alert alert-info">История пуста</div>
-    {% endif %}
+    <!-- Кнопка удаления всех логов -->
+    <form action="{{ url_for('delete_history') }}" method="post" class="mt-3">
+      <button type="submit" class="btn btn-danger"
+              onclick="return confirm('Вы уверены, что хотите удалить всю историю?')">
+        🗑 Удалить все логи
+      </button>
+    </form>
 
-    <a href="{{ url_for('index') }}" class="btn btn-link mt-3">⬅ На главную</a>
+  {% else %}
+    <div class="alert alert-info">История пуста.</div>
+  {% endif %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">⬅ Назад</a>
+{% endblock %}

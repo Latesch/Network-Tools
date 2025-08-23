@@ -12,7 +12,7 @@ def ping_host(host, count=4, timeout=1):
             status = "ok"
         return result, status
     except OSError as e:
-        return f"Ошибка сети: {e}", "error"
+        return f"Ошибка сети: {e}", "danger"
 
 def traceroute_host(host, max_hops=15, timeout=1, queries=1):
     try:
@@ -30,7 +30,7 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
             elif host.lower() in output.lower():
                 status = "ok"
             else:
-                status = "error"
+                status = "danger"
         else:
             if host.lower() in output.lower():
                 if "*" in output:
@@ -38,8 +38,8 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
                 else:
                     status = "ok"
             else:
-                status = "error"
+                status = "danger"
         return output.strip(), status
 
     except Exception as e:
-        return f"Ошибка при выполнении traceroute: {e}", "error"
+        return f"Ошибка при выполнении traceroute: {e}", "danger"

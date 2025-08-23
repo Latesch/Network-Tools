@@ -1,131 +1,120 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <title>Network Tools</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
+{% extends "base.html" %}
 
-  <h1 class="mb-3">Network Tools</h1>
-  <p class="text-muted mb-4">Проверь доступность хоста (Ping) или маршрут (Traceroute). Значения по умолчанию подобраны для быстрой работы.</p>
+{% block title %}NetTools - Главная{% endblock %}
 
-  <!-- Flash messages -->
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="alert alert-warning" role="alert">{{ messages[0] }}</div>
+{% block content %}
+  <h1 class="mb-4">Network Tools</h1>
+
+  <!-- Навигация -->
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="commands-tab" data-bs-toggle="tab"
+              data-bs-target="#commands" type="button" role="tab">
+        Сетевые команды
+      </button>
+    </li>
+    {% if current_user.is_authenticated %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="logs-tab" data-bs-toggle="tab"
+              data-bs-target="#logs" type="button" role="tab">
+        Логи
+      </button>
+    </li>
     {% endif %}
-  {% endwith %}
+  </ul>
 
-  <form method="post" class="row gy-3">
+  <!-- Содержимое вкладок -->
+  <div class="tab-content mt-3" id="myTabContent">
 
-    <!-- Host -->
-    <div class="col-12">
-      <label for="host" class="form-label">Host / IP</label>
-      <input type="text" class="form-control" id="host" name="host" placeholder="8.8.8.8 или google.com" required>
-      <div class="form-text">Можно ввести IPv4/IPv6 или доменное имя.</div>
-    </div>
+    <!-- Вкладка с командами -->
+    <div class="tab-pane fade show active" id="commands" role="tabpanel">
+      <form method="post">
+        <div class="mb-3">
+          <label for="host" class="form-label">Хост/IP</label>
+          <input type="text" class="form-control" id="host" name="host" required>
+        </div>
 
-    <!-- Command -->
-    <div class="col-12">
-      <label class="form-label">Команда</label>
-      <div class="btn-group" role="group" aria-label="Команда">
-        <input type="radio" class="btn-check" name="command" id="cmdPing" value="ping" checked>
-        <label class="btn btn-outline-primary" for="cmdPing">Ping</label>
+        <div class="mb-3">
+          <label for="action" class="form-label">Действие</label>
+          <select class="form-select" id="action" name="action">
+            <option value="ping">Ping</option>
+            <option value="traceroute">Traceroute</option>
+          </select>
+        </div>
 
-        <input type="radio" class="btn-check" name="command" id="cmdTrace" value="traceroute">
-        <label class="btn btn-outline-primary" for="cmdTrace">Traceroute</label>
-      </div>
-    </div>
-
-    <!-- PING options -->
-    <div id="optsPing" class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Параметры Ping</h5>
-          <div class="row g-3">
-            <div class="col-12 col-md-4">
-              <label for="ping_count" class="form-label">Количество пакетов</label>
-              <input type="number" class="form-control" id="ping_count" name="ping_count" min="1" max="25" value="4" required>
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="ping_timeout" class="form-label">Таймаут (сек.)</label>
-              <input type="number" class="form-control" id="ping_timeout" name="ping_timeout" min="0.2" max="15" step="0.1" value="1" required>
-              <div class="form-text">Ожидание ответа одного пакета.</div>
-            </div>
+        <!-- Параметры для Ping -->
+        <div id="ping-options" class="border rounded p-3 mb-3">
+          <h5>Параметры Ping</h5>
+          <div class="mb-3">
+            <label for="ping_count" class="form-label">Количество пакетов</label>
+            <input type="number" class="form-control" id="ping_count" name="ping_count" value="4" min="1" max="20">
+          </div>
+          <div class="mb-3">
+            <label for="ping_timeout" class="form-label">Таймаут (сек.)</label>
+            <input type="number" class="form-control" id="ping_timeout" name="ping_timeout" value="1" min="1" max="10">
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- TRACEROUTE options -->
-    <div id="optsTrace" class="col-12 d-none">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Параметры Traceroute</h5>
-          <div class="row g-3">
-            <div class="col-12 col-md-4">
-              <label for="tr_max_hops" class="form-label">Макс. хопов (-m / -h)</label>
-              <input type="number" class="form-control" id="tr_max_hops" name="tr_max_hops" min="1" max="50" value="15" required>
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="tr_queries" class="form-label">Пакетов на хоп (-q)</label>
-              <input type="number" class="form-control" id="tr_queries" name="tr_queries" min="1" max="3" value="1" required>
-              <div class="form-text">Linux/macOS: -q; в Windows аналог по умолчанию 3.</div>
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="tr_wait" class="form-label">Таймаут на хоп (сек.) (-w)</label>
-              <input type="number" class="form-control" id="tr_wait" name="tr_wait" min="0.5" max="10" step="0.5" value="1" required>
-              <div class="form-text">В Windows задаётся в мс (будет умножено на 1000 на сервере).</div>
-            </div>
+        <!-- Параметры для Traceroute -->
+        <div id="traceroute-options" class="border rounded p-3 mb-3 d-none">
+          <h5>Параметры Traceroute</h5>
+          <div class="mb-3">
+            <label for="tr_max_hops" class="form-label">Макс. число hops</label>
+            <input type="number" class="form-control" id="tr_max_hops" name="tr_max_hops" value="30" min="1" max="64">
+          </div>
+          <div class="mb-3">
+            <label for="tr_queries" class="form-label">Запросов на hop</label>
+            <input type="number" class="form-control" id="tr_queries" name="tr_queries" value="3" min="1" max="10">
+          </div>
+          <div class="mb-3">
+            <label for="tr_wait" class="form-label">Таймаут ожидания (сек.)</label>
+            <input type="number" class="form-control" id="tr_wait" name="tr_wait" value="2" min="1" max="10">
           </div>
         </div>
-      </div>
+
+        <button type="submit" class="btn btn-primary">Выполнить</button>
+      </form>
+
+      {% if result %}
+        <hr>
+        <h3>Результат:</h3>
+        {% if status == "ok" %}
+          <div class="alert alert-success"><pre>{{ result }}</pre></div>
+        {% elif status == "warn" %}
+          <div class="alert alert-warning"><pre>{{ result }}</pre></div>
+        {% elif status == "danger" %}
+          <div class="alert alert-danger"><pre>{{ result }}</pre></div>
+        {% else %}
+          <pre class="bg-dark p-3 rounded">{{ result }}</pre>
+        {% endif %}
+      {% endif %}
     </div>
 
-    <!-- Submit -->
-  <div class="d-flex gap-2 my-3">
-    <button type="submit" class="btn btn-success">Выполнить</button>
-    <a href="{{ url_for('history') }}" class="btn btn-outline-primary">История</a>
+    {% if current_user.is_authenticated %}
+    <!-- Вкладка с логами -->
+    <div class="tab-pane fade" id="logs" role="tabpanel">
+      <h3>История запросов</h3>
+      <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">Открыть историю</a>
+    </div>
+    {% endif %}
   </div>
 
-  <!-- Result -->
-  {% if result %}
-    <hr class="my-4">
-    <h2 class="h5">Результат</h2>
-
-    {% if status == "ok" %}
-      {% set alert_class = "success" %}
-    {% elif status == "warn" %}
-      {% set alert_class = "warning" %}
-    {% elif status == "error" %}
-      {% set alert_class = "danger" %}
-    {% else %}
-      {% set alert_class = "secondary" %}
-    {% endif %}
-
-    <div class="alert alert-{{ alert_class }}" role="alert">
-      <pre class="mb-0">{{ result }}</pre>
-    </div>
-  {% endif %}
-
-  <!-- Мини-скрипт для показа/скрытия блоков (без зависимостей) -->
   <script>
-    const cmdPing = document.getElementById('cmdPing');
-    const cmdTrace = document.getElementById('cmdTrace');
-    const optsPing = document.getElementById('optsPing');
-    const optsTrace = document.getElementById('optsTrace');
+    const actionSelect = document.getElementById("action");
+    const pingOptions = document.getElementById("ping-options");
+    const tracerouteOptions = document.getElementById("traceroute-options");
 
-    function toggleOpts() {
-      const isPing = cmdPing.checked;
-      optsPing.classList.toggle('d-none', !isPing);
-      optsTrace.classList.toggle('d-none', isPing);
+    function toggleOptions() {
+      if (actionSelect.value === "ping") {
+        pingOptions.classList.remove("d-none");
+        tracerouteOptions.classList.add("d-none");
+      } else {
+        pingOptions.classList.add("d-none");
+        tracerouteOptions.classList.remove("d-none");
+      }
     }
-    cmdPing.addEventListener('change', toggleOpts);
-    cmdTrace.addEventListener('change', toggleOpts);
-    toggleOpts(); // инициализация при загрузке
+
+    actionSelect.addEventListener("change", toggleOptions);
+    toggleOptions(); // при загрузке
   </script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,61 @@
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  border-bottom: 2px solid var(--bs-primary);
+}
+
+/* Заголовки */
+h1, h2, h5 {
+  font-weight: 600;
+  color: var(--bs-primary);
+}
+
+/* ===== Блоки кода и результаты ===== */
+pre {
+  background-color: var(--bs-dark);
+  color: var(--bs-light);    
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+  white-space: pre-wrap;  
+  word-wrap: break-word;         
+}
+
+/* ===== Alert-уведомления ===== */
+.alert-success {
+  border-left: 6px solid #28a745;
+}
+.alert-warning {
+  border-left: 6px solid #ffc107;
+}
+.alert-danger {
+  border-left: 6px solid #dc3545;
+}
+
+/* ===== Таблица истории ===== */
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.1); /* лёгкая синяя подсветка */
+}
+
+/* ===== Поддержка светлой / тёмной темы ===== */
+html[data-bs-theme="light"] body {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+html[data-bs-theme="dark"] body {
+  background-color: #121212;
+  color: #e9ecef;
+}
+
+html[data-bs-theme="dark"] pre {
+  background-color: #1e1e1e;
+  color: #f8f9fa;
+}
+
+html[data-bs-theme="dark"] .table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.2);
+}

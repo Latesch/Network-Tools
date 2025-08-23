@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — NetTools{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-4">Вход в систему</h1>
+
+  <form method="POST" action="{{ url_for('login') }}" class="card p-4 shadow-sm">
+    <div class="mb-3">
+      <label for="username" class="form-label">Имя пользователя</label>
+      <input type="text" name="username" id="username" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Пароль</label>
+      <input type="password" name="password" id="password" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Войти</button>
+  </form>
+
+  {% if error %}
+    <div class="alert alert-danger mt-3" role="alert">
+      {{ error }}
+    </div>
+  {% endif %}
+{% endblock %}
