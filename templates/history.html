@@ -1,66 +1,55 @@
 {% extends "base.html" %}
-{% block title %}История логов{% endblock %}
 
 {% block content %}
+<div class="container mt-5">
   <h2 class="mb-4">История логов</h2>
 
-  {% if logs and logs|length > 0 %}
-    <div class="table-responsive">
-      <table class="table table-striped align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Время</th>
-            <th scope="col">Действие</th>
-            <th scope="col">Хост</th>
-            <th scope="col">Статус</th>
-            <th scope="col" class="text-end">Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for log in logs %}
-          <tr>
-            <td>{{ log[0] }}</td>
-            <td>{{ log[1] }}</td>
-            <td>{{ log[2] }}</td>
-            <td>{{ log[3] }}</td>
-            <td>
-              {% if log[5] == "ok" %}
-                <span class="badge bg-success">OK</span>
-              {% elif log[5] == "warn" %}
-                <span class="badge bg-warning text-dark">WARN</span>
-              {% else %}
-                <span class="badge bg-danger">ERROR</span>
-              {% endif %}
-            </td>
-            <td class="text-end">
-              <a href="{{ url_for('history_detail', log_id=log[0]) }}" class="btn btn-sm btn-outline-info">
-                Детали
-              </a>
-              <form action="{{ url_for('del_log_history', log_id=log[0]) }}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('Удалить лог #{{ log[0] }}?')">
-                  Удалить
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  {% if logs %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Время</th>
+          <th>Действие</th>
+          <th>Хост</th>
+          <th>Статус</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.id }}</td>
+          <td>{{ log.timestamp }}</td>
+          <td>{{ log.action }}</td>
+          <td>{{ log.host }}</td>
+          <td>
+            {% if log.status == "ok" %}
+              ✅ Успех
+            {% else %}
+              ❌ Ошибка
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('main.history_detail', log_id=log.id) }}" class="btn btn-sm btn-outline-primary">Детали</a>
+            <form action="{{ url_for('main.del_log_history', log_id=log.id) }}" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-    <!-- Кнопка удаления всех логов -->
-    <form action="{{ url_for('delete_history') }}" method="post" class="mt-3">
-      <button type="submit" class="btn btn-danger"
-              onclick="return confirm('Вы уверены, что хотите удалить всю историю?')">
-        🗑 Удалить все логи
+    <!-- 🚀 Кнопка удаления всех логов -->
+    <form action="{{ url_for('main.delete_history') }}" method="post" class="mt-3">
+      <button type="submit" class="btn btn-danger">
+        🗑️ Удалить всю историю
       </button>
     </form>
 
   {% else %}
-    <div class="alert alert-info">История пуста.</div>
+    <p>История пуста.</p>
   {% endif %}
-
-  <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">⬅ Назад</a>
+</div>
 {% endblock %}

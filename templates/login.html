@@ -5,7 +5,7 @@
 {% block content %}
   <h1 class="h4 mb-4">Вход в систему</h1>
 
-  <form method="POST" action="{{ url_for('login') }}" class="card p-4 shadow-sm">
+  <form method="POST" action="{{ url_for('main.login') }}" class="card p-4 shadow-sm">
     <div class="mb-3">
       <label for="username" class="form-label">Имя пользователя</label>
       <input type="text" name="username" id="username" class="form-control" required>
@@ -24,4 +24,10 @@
       {{ error }}
     </div>
   {% endif %}
+
+  <div class="mt-3 text-center">
+    <p>Нет аккаунта? 
+      <a href="{{ url_for('main.register') }}">Зарегистрироваться</a>
+    </p>
+  </div>
 {% endblock %}

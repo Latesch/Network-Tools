@@ -14,12 +14,15 @@ def ping_host(host, count=4, timeout=1):
     except OSError as e:
         return f"Ошибка сети: {e}", "danger"
 
+
 def traceroute_host(host, max_hops=15, timeout=1, queries=1):
     try:
         if sys.platform.startswith("win"):
-            cmd = ["tracert", "-h", str(max_hops), "-w", str(int(timeout * 1000)), host]
+            cmd = ["tracert", "-h", str(max_hops), "-w",
+                    str(int(timeout * 1000)), host]
         else:
-            cmd = ["traceroute", "-m", str(max_hops), "-q", str(queries), "-w", str(int(timeout)), host]
+            cmd = ["traceroute", "-m", str(max_hops), "-q", str(queries), 
+                   "-w", str(int(timeout)), host]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = (result.stdout or "") + "\n" + (result.stderr or "")

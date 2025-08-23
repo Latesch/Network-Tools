@@ -2,14 +2,18 @@
 {% block title %}Детали лога{% endblock %}
 
 {% block content %}
-  <h2>Детали лога #{{ log[0] }}</h2>
+<div class="container mt-5">
+  <h2>Детали лога #{{ log.id }}</h2>
   <ul class="list-group">
-    <li class="list-group-item"><strong>Время:</strong> {{ log[1] }}</li>
-    <li class="list-group-item"><strong>Действие:</strong> {{ log[2] }}</li>
-    <li class="list-group-item"><strong>Хост:</strong> {{ log[3] }}</li>
-    <li class="list-group-item"><strong>Параметры:</strong> {{ log[4] }}</li>
-    <li class="list-group-item"><strong>Статус:</strong> {{ log[5] }}</li>
-    <li class="list-group-item"><strong>Вывод:</strong><br><pre>{{ log[6] }}</pre></li>
+    <li class="list-group-item"><strong>Время:</strong> {{ log.timestamp }}</li>
+    <li class="list-group-item"><strong>Действие:</strong> {{ log.action }}</li>
+    <li class="list-group-item"><strong>Хост:</strong> {{ log.host }}</li>
+    <li class="list-group-item"><strong>Параметры:</strong> {{ log.params }}</li>
+    <li class="list-group-item"><strong>Статус:</strong> {{ log.status }}</li>
+    <li class="list-group-item"><strong>Вывод:</strong><br>
+      <pre>{{ log.output }}</pre>
+    </li>
   </ul>
-  <a href="{{ url_for('history') }}" class="btn btn-secondary mt-3">Назад</a>
+  <a href="{{ url_for('main.history') }}" class="btn btn-secondary mt-3">Назад</a>
+</div>
 {% endblock %}
