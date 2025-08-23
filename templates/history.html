@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>История запросов — Network Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-0">История запросов</h1>
+    <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">← На главную</a>
+  </div>
+
+  <!-- Панель фильтрации (клиентская) -->
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <input id="searchInput" type="search" class="form-control" placeholder="Фильтр по host / действию / статусу">
+    </div>
+    <div class="col-6 col-sm-3 col-lg-2">
+      <select id="actionFilter" class="form-select">
+        <option value="">Любое действие</option>
+        <option value="ping">Ping</option>
+        <option value="traceroute">Traceroute</option>
+      </select>
+    </div>
+    <div class="col-6 col-sm-3 col-lg-2">
+      <select id="statusFilter" class="form-select">
+        <option value="">Любой статус</option>
+        <option value="ok">ok</option>
+        <option value="warn">warn</option>
+        <option value="error">error</option>
+      </select>
+    </div>
+  </div>
+
+  {% if rows and rows|length %}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle" id="historyTable">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Когда</th>
+            <th scope="col">Действие</th>
+            <th scope="col">Host</th>
+            <th scope="col">Статус</th>
+            <th scope="col" class="text-end">Детали</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for id, ts, action, host, status in rows %}
+            {% set badge =
+              'success' if status=='ok'
+              else 'warning' if status=='warn'
+              else 'danger' if status=='error'
+              else 'secondary'
+            %}
+            <tr>
+              <td class="text-muted">{{ id }}</td>
+              <td>{{ ts }}</td>
+              <td class="text-uppercase small">{{ action }}</td>
+              <td><code>{{ host }}</code></td>
+              <td>
+                <span class="badge bg-{{ badge }}">{{ status }}</span>
+              </td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('history_detail', log_id=id) }}">
+                  Просмотр
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Записей пока нет.</div>
+  {% endif %}
+
+  <!-- Небольшой JS для клиентской фильтрации -->
+  <script>
+    const q = document.getElementById('searchInput');
+    const af = document.getElementById('actionFilter');
+    const sf = document.getElementById('statusFilter');
+    const rows = () => Array.from(document.querySelectorAll('#historyTable tbody tr'));
+
+    function matches(row, text, action, status) {
+      const t = row.innerText.toLowerCase();
+      const okText = !text || t.includes(text);
+      const okAction = !action || t.includes(action);
+      const okStatus = !status || t.includes(status);
+      return okText && okAction && okStatus;
+    }
+
+    function applyFilters() {
+      const text = (q.value || '').toLowerCase().trim();
+      const action = (af.value || '').toLowerCase().trim();
+      const status = (sf.value || '').toLowerCase().trim();
+      rows().forEach(r => r.style.display = matches(r, text, action, status) ? '' : 'none');
+    }
+
+    q.addEventListener('input', applyFilters);
+    af.addEventListener('change', applyFilters);
+    sf.addEventListener('change', applyFilters);
+  </script>
+</body>
+</html>
