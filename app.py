@@ -1,5 +1,5 @@
 from networktools import ping_host, traceroute_host
-from init_db import save_log
+from init_db import save_log, delete_log, delete_logs
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import ipaddress
@@ -50,22 +50,35 @@ def index():
 @app.route('/history', methods=['GET'])
 def history():
     conn = sqlite3.connect("nettools.db")
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    cur.execute("SELECT id, timestamp, action, host, status FROM logs ORDER BY id DESC LIMIT 50")
-    rows = cur.fetchall()
+    cur.execute("SELECT * FROM logs ORDER BY timestamp DESC")
+    logs = cur.fetchall()
     conn.close()
-    return render_template("history.html", rows=rows)
+    return render_template("history.html", logs=logs)
 
 @app.route('/history_detail/<int:log_id>', methods=['GET'])
 def history_detail(log_id):
     conn = sqlite3.connect("nettools.db")
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    cur.execute("SELECT * FROM logs WHERE id = ?", (str(log_id)))
+    cur.execute("SELECT * FROM logs WHERE id = ?", (str(log_id),))
     row = cur.fetchone()
     conn.close()
 
     return render_template("history_detail.html", row=row)
+
+@app.route('/delete_history', methods=['POST'])
+def delete_history():
+    delete_logs()
+    flash("История логов очищена.")
+    return redirect(url_for("history"))
+
+@app.route('/del_log_history/<int:log_id>', methods=['POST'])
+def del_log_history(log_id):
+    delete_log(log_id)
+    flash("Лог был удален.")
+    return redirect(url_for("history"))
 
 if __name__ == '__main__':
     app.run(debug=True)
