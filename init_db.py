@@ -67,3 +67,6 @@ def delete_log(log_id):
         WHERE id = ?""", (log_id,))
     conn.commit()
     conn.close()
+
+if __name__ == '__main__':
+    create_db()

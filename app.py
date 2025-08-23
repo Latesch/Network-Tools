@@ -154,5 +154,4 @@ def del_log_history(log_id):
     return redirect(url_for("history"))
 
 if __name__ == '__main__':
-    create_user("admin", "123")
     app.run(debug=True)

@@ -68,6 +68,7 @@ Network-Tools/
 │
 ├── app.py              # Основное приложение Flask
 ├── nettools.py         # Логика ping и traceroute
+├── init_db.py          # Скрипт инициализации БД
 ├── nettools.db         # База данных (игнорируется в Git)
 ├── templates/          # HTML-шаблоны (Jinja2)
 │   ├── base.html
@@ -76,7 +77,7 @@ Network-Tools/
 │   ├── history.html
 │   └── history_detail.html
 ├── static/             # Статические файлы (CSS, JS)
-│   └── style.css       # Стили
+│   └── style.css
 ├── requirements.txt    # Список зависимостей
 └── README.md           # Этот файл
 ```
