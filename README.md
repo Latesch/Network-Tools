@@ -1,4 +1,3 @@
-````markdown
 # NetTools Web
 
 Веб-приложение на **Flask** с сетевыми утилитами.  
@@ -113,5 +112,3 @@ nettools-web/
 
 Проект создан для практики Python и Flask.
 Автор: **Late** ([@github\Latesch](https://github.com/Latesch))
-
-```
