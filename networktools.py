@@ -1,8 +1,6 @@
 from pythonping import ping
-from scapy.all import IP, UDP, DNS, DNSQR, sr1
 import subprocess
 import sys
-import random
 
 
 def ping_host(host, count=4, timeout=1):
@@ -19,17 +17,27 @@ def ping_host(host, count=4, timeout=1):
 
 def traceroute_host(host, max_hops=15, timeout=1, queries=1):
     try:
-        if sys.platform.startswith("win"):
-            cmd = ["tracert", "-h", str(max_hops), "-w",
-                    str(int(timeout * 1000)), host]
+        is_windows = sys.platform.startswith("win")
+        if is_windows:
+            cmd = [
+                "tracert",
+                "-h", str(max_hops),
+                "-w", str(int(timeout * 1000)),
+                host,
+            ]
         else:
-            cmd = ["traceroute", "-m", str(max_hops), "-q", str(queries), 
-                   "-w", str(int(timeout)), host]
+            cmd = [
+                "traceroute",
+                "-m", str(max_hops),
+                "-q", str(queries),
+                "-w", str(int(timeout)),
+                host,
+            ]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = (result.stdout or "") + "\n" + (result.stderr or "")
 
-        if sys.platform.startswith("win"):
+        if is_windows:
             if "request timed out" in output.lower():
                 status = "warn"
             elif host.lower() in output.lower():
@@ -38,12 +46,10 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
                 status = "danger"
         else:
             if host.lower() in output.lower():
-                if "*" in output:
-                    status = "warn"
-                else:
-                    status = "ok"
+                status = "warn" if "*" in output else "ok"
             else:
                 status = "danger"
+
         return output.strip(), status
 
     except Exception as e:
@@ -52,20 +58,28 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
 
 def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
     try:
-        dns_req = IP(dst=dns_server)/UDP(sport=random.randint(1024,65535), dport=53)/DNS(rd=1,qd=DNSQR(qname=host, qtype=qtype))
-        resp = sr1(dns_req, verbose=0, timeout=timeout)
+        cmd = ["nslookup", "-type=" + qtype, host, dns_server]
 
-        if resp is None:
-            return (f"*** No response from DNS server {dns_server}", "danger")
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        output = (result.stdout or "") + "\n" + (result.stderr or "")
 
-        if resp.haslayer(DNS) and resp[DNS].ancount > 0:
-            answers = []
-            for i in range(resp[DNS].ancount):
-                r = resp[DNS].an[i]
-                answers.append(r.rdata if hasattr(r, "rdata") else str(r))
-            return ("\n".join(map(str, answers)), "ok")
+        if "timed out" in output.lower() or "no response" in output.lower():
+            status = "danger"
+        elif "non-existent domain" in output.lower() or "can't find" in output.lower():
+            status = "danger"
+        elif "name:" in output.lower() and "address" in output.lower():
+            status = "ok"
+        else:
+            status = "warn"
 
-        return (f"*** No {qtype} record found for {host}", "warn")
+        return output.strip(), status
 
+    except subprocess.TimeoutExpired:
+        return f"*** Timeout: no response from DNS server {dns_server}", "danger"
     except Exception as e:
-        return (f"Error: {str(e)}", "danger")
+        return f"Error while running nslookup: {e}", "danger"

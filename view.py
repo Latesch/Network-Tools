@@ -159,6 +159,7 @@ def del_log_history(log_id):
     flash("Лог был удален.", "ok")
     return redirect(url_for("main.history"))
 
+
 @bp.route("/export/json")
 @login_required
 def export_json():
