@@ -30,7 +30,7 @@
     <div class="tab-pane fade show active" id="commands" role="tabpanel">
       <form method="post">
         <div class="mb-3">
-          <label for="host" class="form-label">Хост/IP</label>
+          <label for="host" class="form-label">Хост/IP/Домен</label>
           <input type="text" class="form-control" id="host" name="host" required>
         </div>
 
@@ -39,6 +39,7 @@
           <select class="form-select" id="action" name="action">
             <option value="ping">Ping</option>
             <option value="traceroute">Traceroute</option>
+            <option value="nslookup">Nslookup</option>
           </select>
         </div>
 
@@ -69,6 +70,26 @@
           <div class="mb-3">
             <label for="tr_wait" class="form-label">Таймаут ожидания (сек.)</label>
             <input type="number" class="form-control" id="tr_wait" name="tr_wait" value="2" min="1" max="10">
+          </div>
+        </div>
+
+        <!-- Параметры для Nslookup -->
+        <div id="nslookup-options" class="border rounded p-3 mb-3 d-none">
+          <h5>Параметры Nslookup</h5>
+          <div class="mb-3">
+            <label for="ns_type" class="form-label">Тип записи</label>
+            <select class="form-select" id="ns_type" name="ns_type">
+              <option value="A">A (IPv4 адрес)</option>
+              <option value="AAAA">AAAA (IPv6 адрес)</option>
+              <option value="MX">MX (почтовые сервера)</option>
+              <option value="NS">NS (DNS-сервера)</option>
+              <option value="CNAME">CNAME (каноническое имя)</option>
+              <option value="TXT">TXT (текстовые записи)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="dns_server" class="form-label">DNS-сервер</label>
+            <input type="text" class="form-control" id="dns_server" name="dns_server" value="8.8.8.8">
           </div>
         </div>
 
@@ -103,18 +124,23 @@
     const actionSelect = document.getElementById("action");
     const pingOptions = document.getElementById("ping-options");
     const tracerouteOptions = document.getElementById("traceroute-options");
+    const nslookupOptions = document.getElementById("nslookup-options");
 
     function toggleOptions() {
+      pingOptions.classList.add("d-none");
+      tracerouteOptions.classList.add("d-none");
+      nslookupOptions.classList.add("d-none");
+
       if (actionSelect.value === "ping") {
         pingOptions.classList.remove("d-none");
-        tracerouteOptions.classList.add("d-none");
-      } else {
-        pingOptions.classList.add("d-none");
+      } else if (actionSelect.value === "traceroute") {
         tracerouteOptions.classList.remove("d-none");
+      } else if (actionSelect.value === "nslookup") {
+        nslookupOptions.classList.remove("d-none");
       }
     }
 
     actionSelect.addEventListener("change", toggleOptions);
-    toggleOptions(); // при загрузке
+    toggleOptions();
   </script>
 {% endblock %}

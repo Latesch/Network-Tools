@@ -1,4 +1,4 @@
-from networktools import ping_host, traceroute_host
+from networktools import ping_host, traceroute_host, nslookup
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required
 from models import User, Log
@@ -59,6 +59,11 @@ def index():
                 tr_wait = float(request.form.get("tr_wait"))
                 result, status = traceroute_host(host, tr_max_hops, tr_wait, tr_queries)
                 Log.save("traceroute", host, {"max_hops": tr_max_hops, "q": tr_queries, "wait": tr_wait}, status, str(result))
+            elif command == "nslookup":
+                ns_type = str(request.form.get("ns_type"))
+                dns_server = str(request.form.get("dns_server"))
+                result, status = nslookup(host, ns_type, dns_server)
+                Log.save("nslookup", host, {"ns_type": ns_type, "dns_server": dns_server}, status, str(result))
 
     return render_template("index.html", result=result, status=status)
 

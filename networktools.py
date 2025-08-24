@@ -1,6 +1,8 @@
+from pythonping import ping
+from scapy.all import IP, UDP, DNS, DNSQR, sr1
 import subprocess
 import sys
-from pythonping import ping
+import random
 
 
 def ping_host(host, count=4, timeout=1):
@@ -46,3 +48,24 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
 
     except Exception as e:
         return f"Ошибка при выполнении traceroute: {e}", "danger"
+
+
+def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
+    try:
+        dns_req = IP(dst=dns_server)/UDP(sport=random.randint(1024,65535), dport=53)/DNS(rd=1,qd=DNSQR(qname=host, qtype=qtype))
+        resp = sr1(dns_req, verbose=0, timeout=timeout)
+
+        if resp is None:
+            return (f"*** No response from DNS server {dns_server}", "danger")
+
+        if resp.haslayer(DNS) and resp[DNS].ancount > 0:
+            answers = []
+            for i in range(resp[DNS].ancount):
+                r = resp[DNS].an[i]
+                answers.append(r.rdata if hasattr(r, "rdata") else str(r))
+            return ("\n".join(map(str, answers)), "ok")
+
+        return (f"*** No {qtype} record found for {host}", "warn")
+
+    except Exception as e:
+        return (f"Error: {str(e)}", "danger")
