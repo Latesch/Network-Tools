@@ -40,13 +40,14 @@ def valid_ip(value: str) -> bool:
 def index():
     result = None
     status = None
+    action = request.form.get("action")
     if request.method == "POST":
         host = request.form.get("host")
-        command = request.form.get("action")
+        command = action
 
         if not valid_ip(host):
             flash("❌ Некорректный IP или доменное имя", "danger")
-            return render_template("index.html", result=None, status=None)
+            return render_template("index.html", result=None, status=None, action=command)
         else:        
             if command == "ping":
                 ping_timeout = float(request.form.get("ping_timeout"))
@@ -65,7 +66,7 @@ def index():
                 result, status = nslookup(host, ns_type, dns_server)
                 Log.save("nslookup", host, {"ns_type": ns_type, "dns_server": dns_server}, status, str(result))
 
-    return render_template("index.html", result=result, status=status)
+    return render_template("index.html", result=result, status=status, action=action)
 
 
 @login_manager.user_loader

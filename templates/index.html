@@ -37,9 +37,9 @@
         <div class="mb-3">
           <label for="action" class="form-label">Действие</label>
           <select class="form-select" id="action" name="action">
-            <option value="ping">Ping</option>
-            <option value="traceroute">Traceroute</option>
-            <option value="nslookup">Nslookup</option>
+            <option value="ping" {% if action == "ping" %}selected{% endif %}>Ping</option>
+            <option value="traceroute" {% if action == "traceroute" %}selected{% endif %}>Traceroute</option>
+            <option value="nslookup" {% if action == "nslookup" %}selected{% endif %}>Nslookup</option>
           </select>
         </div>
 
