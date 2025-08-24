@@ -1,5 +1,5 @@
 from networktools import ping_host, traceroute_host, nslookup
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required
 from models import User, Log
 from app import db, login_manager
@@ -158,3 +158,21 @@ def del_log_history(log_id):
     Log.delete_by_id(log_id)
     flash("Лог был удален.", "ok")
     return redirect(url_for("main.history"))
+
+@bp.route("/export/json")
+@login_required
+def export_json():
+    logs = Log.query.all()
+    data = [
+        {
+            "id": log.id,
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "action": log.action,
+            "host": log.host,
+            "params": log.params,
+            "status": log.status,
+            "output": log.output,
+        }
+        for log in logs
+    ]
+    return jsonify(data)

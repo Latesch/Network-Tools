@@ -41,12 +41,14 @@
       </tbody>
     </table>
 
-    <!-- 🚀 Кнопка удаления всех логов -->
     <form action="{{ url_for('main.delete_history') }}" method="post" class="mt-3">
       <button type="submit" class="btn btn-danger">
         🗑️ Удалить всю историю
       </button>
     </form>
+    <div class="d-flex gap-2 mb-3">
+      <a href="{{ url_for('main.export_json') }}" class="btn btn-outline-success">Export JSON</a>
+    </div>
 
   {% else %}
     <p>История пуста.</p>
