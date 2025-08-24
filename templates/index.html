@@ -13,14 +13,6 @@
         Сетевые команды
       </button>
     </li>
-    {% if current_user.is_authenticated %}
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="logs-tab" data-bs-toggle="tab"
-              data-bs-target="#logs" type="button" role="tab">
-        Логи
-      </button>
-    </li>
-    {% endif %}
   </ul>
 
   <!-- Содержимое вкладок -->
@@ -110,14 +102,6 @@
         {% endif %}
       {% endif %}
     </div>
-
-    {% if current_user.is_authenticated %}
-    <!-- Вкладка с логами -->
-    <div class="tab-pane fade" id="logs" role="tabpanel">
-      <h3>История запросов</h3>
-      <a href="{{ url_for('main.history') }}" class="btn btn-outline-secondary">Открыть историю</a>
-    </div>
-    {% endif %}
   </div>
 
   <script>

@@ -1,6 +1,17 @@
 from pythonping import ping
+import paramiko, telnetlib
 import subprocess
-import sys
+import time, sys, re
+
+
+ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+PAGING_COMMANDS = {
+    "cisco": "terminal length 0",
+    "huawei": "screen-length 0 temporary",
+    "eltex": "terminal datadump",
+    "ecorouter": "terminal length 0",
+}
 
 
 def ping_host(host, count=4, timeout=1):
@@ -83,3 +94,95 @@ def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
         return f"*** Timeout: no response from DNS server {dns_server}", "danger"
     except Exception as e:
         return f"Error while running nslookup: {e}", "danger"
+
+
+def ssh_command(host, username, password, command, model="cisco", port=22, timeout=5):
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(
+            host, port=port, username=username, password=password,
+            timeout=timeout, look_for_keys=False, allow_agent=False
+        )
+
+        chan = client.invoke_shell()
+        chan.settimeout(timeout)
+
+        time.sleep(1)
+        if chan.recv_ready():
+            _ = chan.recv(4096)
+
+        if model.lower() in PAGING_COMMANDS:
+            chan.send(PAGING_COMMANDS[model.lower()] + "\r")
+            time.sleep(0.5)
+            while chan.recv_ready():
+                chan.recv(4096)
+
+        chan.send(command + "\r")
+        buffer = ""
+        end_markers = ["#", ">"]
+
+        while True:
+            if chan.recv_ready():
+                chunk = chan.recv(4096).decode("utf-8", errors="ignore")
+                buffer += chunk
+
+                if any(buffer.strip().endswith(m) for m in end_markers):
+                    break
+            else:
+                time.sleep(0.1)
+
+        chan.close()
+        client.close()
+        clean_output = ANSI_ESCAPE.sub("", buffer)
+        lines = clean_output.strip().splitlines()
+        if lines and command.split()[0] in lines[0]:
+            lines = lines[1:]
+
+        return "\n".join(lines).strip(), "ok"
+
+    except Exception as e:
+        return f"SSH error: {e}", "danger"
+
+
+def telnet_command(host, username, password, command, model="cisco", port=23, timeout=5):
+    try:
+        tn = telnetlib.Telnet(host, port, timeout)
+
+        idx, _, _ = tn.expect([b"login: ", b"Login: ", b"Username: "], timeout)
+        if idx >= 0:
+            tn.write(username.encode("utf-8") + b"\r")
+
+        idx, _, _ = tn.expect([b"Password: ", b"password: "], timeout)
+        if idx >= 0:
+            tn.write(password.encode("utf-8") + b"\r")
+
+        if model.lower() in PAGING_COMMANDS:
+            tn.write(PAGING_COMMANDS[model.lower()].encode("utf-8") + b"\r")
+            time.sleep(0.5)
+            tn.read_very_eager()
+
+        tn.write(command.encode("utf-8") + b"\r")
+        buffer = ""
+        end_markers = [b"#", b">"]
+        start_time = time.time()
+
+        while True:
+            chunk = tn.read_very_eager().decode("utf-8", errors="ignore")
+            if chunk:
+                buffer += chunk
+                if any(buffer.strip().endswith(m.decode()) for m in end_markers):
+                    break
+            if time.time() - start_time > timeout:
+                break
+            time.sleep(0.1)
+
+        clean_output = ANSI_ESCAPE.sub("", buffer)
+        lines = clean_output.strip().splitlines()
+        if lines and command.split()[0] in lines[0]:
+            lines = lines[1:]
+
+        return "\n".join(lines).strip(), "ok"
+
+    except Exception as e:
+        return f"Telnet error: {e}", "danger"

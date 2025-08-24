@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Подключение к устройству</h2>
+
+  <form method="post">
+    <div class="mb-3">
+      <label for="protocol" class="form-label">Протокол</label>
+      <select name="protocol" id="protocol" class="form-select">
+        <option value="ssh" {% if request.form.get('protocol') == 'ssh' %}selected{% endif %}>SSH</option>
+        <option value="telnet" {% if request.form.get('protocol') == 'telnet' %}selected{% endif %}>Telnet</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="model" class="form-label">Вендор</label>
+      <select name="model" id="model" class="form-select">
+        <option value="cisco" {% if request.form.get('model') == 'cisco' %}selected{% endif %}>Cisco</option>
+        <option value="huawei" {% if request.form.get('model') == 'huawei' %}selected{% endif %}>Huawei</option>
+        <option value="eltex" {% if request.form.get('model') == 'eltex' %}selected{% endif %}>Eltex</option>
+        <option value="ecorouter" {% if request.form.get('model') == 'ecorouter' %}selected{% endif %}>EcoRouter</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="host" class="form-label">Хост</label>
+      <input type="text" name="host" id="host" class="form-control"
+             value="{{ request.form.get('host', '') }}" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="username" class="form-label">Логин</label>
+      <input type="text" name="username" id="username" class="form-control"
+             value="{{ request.form.get('username', '') }}" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Пароль</label>
+      <input type="password" name="password" id="password" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="command" class="form-label">Команда</label>
+      <input type="text" name="command" id="command" class="form-control"
+             placeholder="Например: show system"
+             value="{{ request.form.get('command', '') }}" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Выполнить</button>
+  </form>
+
+  {% if output %}
+  <div class="mt-4">
+    <h4>Результат:</h4>
+    <pre class="p-3 border rounded bg-body-secondary text-body">{{ output }}</pre>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

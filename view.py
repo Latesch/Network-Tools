@@ -1,4 +1,4 @@
-from networktools import ping_host, traceroute_host, nslookup
+from networktools import ping_host, traceroute_host, nslookup, ssh_command, telnet_command
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required
 from models import User, Log
@@ -177,3 +177,23 @@ def export_json():
         for log in logs
     ]
     return jsonify(data)
+
+@bp.route("/connect", methods=["GET", "POST"])
+@login_required
+def connect():
+    output, status = None, None
+
+    if request.method == "POST":
+        protocol = request.form.get("protocol")
+        model = request.form.get("model")
+        host = request.form.get("host")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        command = request.form.get("command")
+
+        if protocol == "ssh":
+            output, status = ssh_command(host, username, password, command, model)
+        elif protocol == "telnet":
+            output, status = telnet_command(host, username, password, command, model)
+
+    return render_template("connect.html", output=output, status=status)
