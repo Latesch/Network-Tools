@@ -6,7 +6,7 @@ import os
 
 def create_app():
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    
+
     app = Flask(
         __name__,
         template_folder=os.path.join(BASE_DIR, "templates"),
@@ -19,9 +19,9 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    with app.app_context():
-        db.create_all()
-
     app.register_blueprint(bp)
 
     return app
+
+
+app = create_app()

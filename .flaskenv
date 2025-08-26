@@ -1,2 +1,2 @@
-FLASK_APP=nettools.app:create_app
+FLASK_APP=nettools.app
 FLASK_ENV=development
