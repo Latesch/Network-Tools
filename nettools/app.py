@@ -1,10 +1,17 @@
 from flask import Flask
-from extensions import db, login_manager
-from view import bp
+from .extensions import db, login_manager
+from .view import bp
+import os
 
 
 def create_app():
-    app = Flask(__name__)
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(BASE_DIR, "templates"),
+        static_folder=os.path.join(BASE_DIR, "static")
+    )
     app.config["SECRET_KEY"] = "supersecretkey"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///nettools.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -12,7 +19,6 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from models import User, Log  
     with app.app_context():
         db.create_all()
 

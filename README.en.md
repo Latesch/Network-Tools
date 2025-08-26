@@ -1,20 +1,21 @@
 # NetTools Web
 
-A **Flask**-based web application with built-in network utilities.  
-It allows running basic network commands via a web interface:
+A web application built with **Flask** that provides network utilities.
+It allows you to run basic network commands via a web interface:
 
-* `Ping` with configurable parameters (packet count, timeout, etc.);
-* `Traceroute` with adjustable options;
+* `Ping` with customizable parameters (packet count, timeout, etc.);
+* `Traceroute` with configurable options;
 * Color-coded results (success, warning, error);
 * Logging of all requests into an SQLite database;
-* History view with detailed request information;
-* Ability to delete single logs or the entire history;
+* View history and details of each request;
+* Delete individual logs or the entire history;
 * User authentication (Flask-Login) with password hashing;
-* User registration through the web interface;
+* User registration via web interface;
 * User roles (regular user / administrator);
 * Access control:
-  * guest → only run commands;
-  * authenticated user → run commands + view/manage logs.
+
+  * guest → only execute commands;
+  * authenticated user → execute commands + view/manage logs.
 
 ---
 
@@ -25,41 +26,71 @@ It allows running basic network commands via a web interface:
 ```bash
 git clone https://github.com/Latesch/Network-Tools.git
 cd Network-Tools
-````
+```
 
 ### 2. Create a virtual environment
 
 ```bash
-python3 -m venv venv
+python3 -m venv .venv
 ```
 
-Activate it:
+Activation:
 
 * Linux/macOS:
 
   ```bash
-  source venv/bin/activate
+  source .venv/bin/activate
   ```
 * Windows (cmd):
 
   ```cmd
-  venv\Scripts\activate
+  .venv\Scripts\activate
   ```
 
-### 3. Install dependencies
+### 3. Upgrade pip
+
+```bash
+pip install --upgrade pip
+```
+
+### 4. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Run the application
+### 5. Run the application
+
+#### Local run (development)
 
 ```bash
 flask run
 ```
 
-Once started, the app will be available at:
+By default, the app will be available at:
 👉 [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+---
+
+#### Access from other devices (external)
+
+```bash
+flask run --host=0.0.0.0
+```
+
+If your computer IP is `192.168.1.10`, the app will be available at:
+👉 [http://192.168.1.10:5000](http://192.168.1.10:5000)
+
+---
+
+#### Run on a custom port
+
+```bash
+flask run --host=0.0.0.0 --port=8080
+```
+
+Now the server is available on port `8080`:
+👉 [http://192.168.1.10:8080](http://192.168.1.10:8080)
 
 ---
 
@@ -68,61 +99,71 @@ Once started, the app will be available at:
 ```
 Network-Tools/
 │
-├── app.py              # Flask app factory (create_app)
-├── extensions.py       # Extensions (db, login_manager, etc.)
-├── models.py           # SQLAlchemy models (User, Log)
-├── view.py             # Main routes (Blueprint "main")
-├── nettools.py         # Ping & traceroute logic
-├── run.py              # Entry point (flask run → create_app())
-├── instance/           # Local data (ignored by Git)
-│   └── nettools.db     # SQLite database
-├── templates/          # Jinja2 templates
+├── nettools/
+│   ├── app.py              # Flask application factory (create_app)
+│   ├── extensions.py       # Extensions (db, login_manager, etc.)
+│   ├── models.py           # SQLAlchemy models (User, Log)
+│   ├── view.py             # Main routes (Blueprint "main")
+│   └── nettools.py         # Logic for ping and traceroute
+│
+├── instance/               # Local data (ignored by Git)
+│   └── nettools.db         # SQLite database
+│
+├── templates/              # HTML templates (Jinja2)
 │   ├── base.html
 │   ├── index.html
 │   ├── login.html
 │   ├── register.html
+│   ├── connect.html
 │   ├── history.html
 │   └── history_detail.html
-├── static/             # Static files (CSS, JS)
+│
+├── static/                 # Static files (CSS, JS)
+│   ├── apple-touch-icon.png
+│   ├── favicon.png
+│   ├── favicon.ico
 │   └── style.css
-├── requirements.txt    # Dependencies list
-└── README.md           # This file
+│
+├── requirements.txt        # Dependencies
+├── README.md               # Documentation project
+└── run.py                  # Entry point (flask run → create_app())
 ```
 
 ---
 
 ## 🔑 Authentication & Roles
 
-The app uses **Flask-Login** for authentication.
+Using **Flask-Login**.
 
-User registration is available at `/register` (passwords are stored as hashes).
+Users can register via `/register` (passwords are stored as hashes).
 
-👉 Invalid credentials trigger an error message.
-👉 Login/Logout buttons update dynamically depending on user state.
+👉 Invalid login or password will trigger an error message.
+👉 Login/Logout button dynamically updates depending on auth state.
 
 ---
 
 ## 🗄 Database
 
-* All requests are stored in `nettools.db`.
+* All executed requests are stored in `nettools.db`.
 * **Log** model stores:
 
-  * `id`, `timestamp`, `action`, `host`, `params`, `status`, `output`
+  * `id`, `timestamp`, `action`, `host`, `params`, `status`, `output`.
 * **User** model stores:
 
-  * `id`, `timestamp`, `username`, `password_hash`, `role`
+  * `id`, `timestamp`, `username`, `password_hash`, `role`.
 
 ---
 
 ## 📌 TODO (future improvements)
 
-* xtermjs integration;
-* SSH access to devices & command execution (Paramiko);
+* Integration with **xterm.js** for live terminal;
+* Real-time interactive sessions;
 * Ansible integration;
-* Inventory database (auto-discovery);
+* Network inventory database (auto-discovery);
 * SNMP/NetFlow integration;
-* Network diagrams & topology visualization;
-* OpenAPI.json support.
+* Network topology visualization;
+* Jumphost support;
+* OpenAPI.json.
 
 ---
 
@@ -132,48 +173,20 @@ User registration is available at `/register` (passwords are stored as hashes).
 * Flask + Flask-Login
 * SQLAlchemy (SQLite)
 * Bootstrap (via CDN)
-* PythonPing / Subprocess / Scapy
-* Werkzeug (password hashing)
+* PythonPing / Subprocess
+* Paramiko + telnetlib
+* Werkzeug (for password hashing)
 
 ---
 
 ## 🤝 Contributing Guide
 
-Thank you for contributing! 🚀
-
-### 📌 Rules
-
-* All new features and bugfixes go into **separate branches**:
-
-  ```bash
-  git checkout -b feature/my-feature
-  git checkout -b fix/my-bug
-  ```
-* Before opening a PR, check code style:
-
-  ```bash
-  flake8
-  ```
-* Use clear commit messages:
-
-  * `feat: added ...`
-  * `fix: fixed ...`
-  * `docs: updated ...`
-
-### 🔀 Pull Requests
-
-1. Fork the repository and create a new branch.
-2. Run the project and ensure everything works.
-3. Run the linter:
-
-   ```bash
-   flake8
-   ```
-4. Open a PR into `main` with a description of your changes.
+[CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## 👤 Author
 
-Project created for practicing Python & Flask.
-Author: **Late** ([@telegram\Latesch](https://t.me/Latesch))
+Project created for **Python & Flask practice**.
+Author: **Late**
+[Telegram @Latesch](https://t.me/Latesch)

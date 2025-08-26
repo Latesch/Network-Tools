@@ -1,4 +1,4 @@
-from extensions import db
+from .extensions import db
 from sqlalchemy.dialects.sqlite import JSON
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash

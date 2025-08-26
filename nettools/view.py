@@ -1,8 +1,8 @@
-from networktools import ping_host, traceroute_host, nslookup, ssh_command, telnet_command
+from .networktools import ping_host, traceroute_host, nslookup, ssh_command, telnet_command
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required
-from models import User, Log
-from app import db, login_manager
+from .models import User, Log
+from .app import db, login_manager
 import ipaddress
 import socket
 import re

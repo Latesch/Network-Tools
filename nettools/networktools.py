@@ -1,7 +1,10 @@
 from pythonping import ping
-import paramiko, telnetlib
+import paramiko
+import telnetlib
 import subprocess
-import time, sys, re
+import time
+import sys
+import re
 
 
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
