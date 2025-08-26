@@ -17,7 +17,24 @@ PAGING_COMMANDS = {
 }
 
 
-def ping_host(host, count=4, timeout=1):
+def ping_host(
+    host: str,
+    count: int = 4,
+    timeout: int = 1,
+) -> tuple[str, str]:
+    """
+    Выполняет ping до указанного хоста.
+
+
+    Args:
+    host (str): IP или доменное имя.
+    count (int): Количество пакетов.
+    timeout (int): Таймаут ожидания ответа (секунды).
+
+
+    Returns:
+    tuple[str, str]: (результат команды, статус: "ok", "warn" или "danger").
+    """
     try:
         result = ping(host, count=count, timeout=timeout)
         if result.stats_packets_lost >= (count // 2):
@@ -29,14 +46,33 @@ def ping_host(host, count=4, timeout=1):
         return f"Ошибка сети: {e}", "danger"
 
 
-def traceroute_host(host, max_hops=15, timeout=1, queries=1):
+def traceroute_host(
+    host: str,
+    max_hops: int = 15,
+    timeout: int = 1,
+    queries: int = 1
+) -> tuple[str, str]:
+    """
+    Выполняет traceroute до указанного хоста.
+
+
+    Args:
+    host (str): IP или доменное имя.
+    max_hops (int): Максимальное количество прыжков.
+    timeout (int): Таймаут ожидания (секунды).
+    queries (int): Количество запросов.
+
+
+    Returns:
+    tuple[str, str]: (результат команды, статус: "ok", "warn" или "danger").
+    """
     try:
         is_windows = sys.platform.startswith("win")
         if is_windows:
             cmd = [
                 "tracert",
                 "-h", str(max_hops),
-                "-w", str(int(timeout * 1000)),
+                "-w", f"{int(timeout * 1000)}",
                 host,
             ]
         else:
@@ -70,7 +106,26 @@ def traceroute_host(host, max_hops=15, timeout=1, queries=1):
         return f"Ошибка при выполнении traceroute: {e}", "danger"
 
 
-def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
+def nslookup(
+    host: str,
+    qtype: str = "A",
+    dns_server: str = "8.8.8.8",
+    timeout: int = 2
+) -> tuple[str, str]:
+    """
+    Выполняет DNS-запрос (nslookup).
+
+
+    Args:
+    host (str): Доменное имя.
+    qtype (str): Тип записи (A, MX, AAAA и т.д.).
+    dns_server (str): DNS-сервер.
+    timeout (int): Таймаут ожидания (секунды).
+
+
+    Returns:
+    tuple[str, str]: (результат запроса, статус: "ok", "warn" или "danger").
+    """
     try:
         cmd = ["nslookup", "-type=" + qtype, host, dns_server]
 
@@ -106,8 +161,33 @@ def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
 
 
 def ssh_command(
-    host, username, password, command, model="cisco", port=22, timeout=5
-):
+    host: str,
+    username: str,
+    password: str,
+    command: str,
+    model: str = "cisco",
+    port: int = 22,
+    timeout: int = 5
+) -> tuple[str, str]:
+    """
+    Выполняет SSH-подключение и выполнение команды.
+
+
+    Args:
+    host (str): IP или доменное имя.
+    username (str): Имя пользователя.
+    password (str): Пароль.
+    command (str): Команда для выполнения.
+    model (str): Модель оборудования (для отключения paging).
+    port (int): Порт SSH.
+    timeout (int): Таймаут (секунды).
+
+
+    Returns:
+    tuple[str, str]: (результат выполнения, статус: "ok" или "danger").
+    """
+    client = None
+    chan = None
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -143,8 +223,6 @@ def ssh_command(
             else:
                 time.sleep(0.1)
 
-        chan.close()
-        client.close()
         clean_output = ANSI_ESCAPE.sub("", buffer)
         lines = clean_output.strip().splitlines()
         if lines and command.split()[0] in lines[0]:
@@ -155,10 +233,40 @@ def ssh_command(
     except Exception as e:
         return f"SSH error: {e}", "danger"
 
+    finally:
+        if chan:
+            chan.close()
+        if client:
+            client.close()
+
 
 def telnet_command(
-    host, username, password, command, model="cisco", port=23, timeout=5
-):
+    host: str,
+    username: str,
+    password: str,
+    command: str,
+    model: str = "cisco",
+    port: int = 23,
+    timeout: int = 5
+) -> tuple[str, str]:
+    """
+    Выполняет Telnet-подключение и выполнение команды.
+
+
+    Args:
+    host (str): IP или доменное имя.
+    username (str): Имя пользователя.
+    password (str): Пароль.
+    command (str): Команда для выполнения.
+    model (str): Модель оборудования (зарезервировано для будущего).
+    port (int): Порт Telnet.
+    timeout (int): Таймаут (секунды).
+
+
+    Returns:
+    tuple[str, str]: (результат выполнения, статус: "ok" или "danger").
+    """
+    tn = None
     try:
         tn = telnetlib.Telnet(host, port, timeout)
 
@@ -202,3 +310,7 @@ def telnet_command(
 
     except Exception as e:
         return f"Telnet error: {e}", "danger"
+
+    finally:
+        if tn:
+            tn.close()

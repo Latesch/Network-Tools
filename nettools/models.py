@@ -1,16 +1,23 @@
 from .extensions import db
 from sqlalchemy.dialects.sqlite import JSON
+from sqlalchemy.orm import Mapped, mapped_column
 from flask_login import UserMixin
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=db.func.now())
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), default="user")
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        db.DateTime, default=db.func.now(),
+    )
+    username: Mapped[str] = mapped_column(
+        db.String(64), unique=True, nullable=False
+    )
+    password_hash: Mapped[str] = mapped_column(db.String(128), nullable=False)
+    role: Mapped[str] = mapped_column(db.String(20), default="user")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(
@@ -26,13 +33,16 @@ class User(UserMixin, db.Model):
 
 class Log(db.Model):
     __tablename__ = "logs"
-    id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=db.func.now())
-    action = db.Column(db.String(64))
-    host = db.Column(db.String(128))
-    params = db.Column(JSON)
-    status = db.Column(db.String(16))
-    output = db.Column(db.Text)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        db.DateTime, default=db.func.now(),
+    )
+    action: Mapped[str] = mapped_column(db.String(64), nullable=False)
+    host: Mapped[str] = mapped_column(db.String(128), nullable=False)
+    params: Mapped[dict] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(db.String(16), nullable=False)
+    output: Mapped[str] = mapped_column(db.Text, nullable=False)
 
     @classmethod
     def save(cls, action, host, params, status, output):

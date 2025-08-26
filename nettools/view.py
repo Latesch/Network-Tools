@@ -53,29 +53,37 @@ def index():
                 "index.html", result=None, status=None, action=command
             )
         else:
-            if command == "ping":
-                ping_timeout = float(request.form.get("ping_timeout"))
-                ping_count = int(request.form.get("ping_count"))
-                result, status = ping_host(host, ping_count, ping_timeout)
-                params = {"count": ping_count, "timeout": ping_timeout}
-                Log.save("ping", host, params, status, str(result))
-            elif command == "traceroute":
-                tr_max_hops = int(request.form.get("tr_max_hops"))
-                tr_queries = int(request.form.get("tr_queries"))
-                tr_wait = float(request.form.get("tr_wait"))
-                result, status = traceroute_host(
-                    host, tr_max_hops, tr_wait, tr_queries
-                )
-                params = {
-                    "max_hops": tr_max_hops, "q": tr_queries, "wait": tr_wait
-                }
-                Log.save("traceroute", host, params, status, str(result))
-            elif command == "nslookup":
-                ns_type = str(request.form.get("ns_type"))
-                dns_server = str(request.form.get("dns_server"))
-                result, status = nslookup(host, ns_type, dns_server)
-                params = {"ns_type": ns_type, "dns_server": dns_server}
-                Log.save("nslookup", host, params, status, str(result))
+            match command:
+                case "ping":
+                    ping_timeout = float(request.form.get("ping_timeout"))
+                    ping_count = int(request.form.get("ping_count"))
+                    result, status = ping_host(host, ping_count, ping_timeout)
+                    params = {"count": ping_count, "timeout": ping_timeout}
+                    Log.save("ping", host, params, status, str(result))
+
+                case "traceroute":
+                    tr_max_hops = int(request.form.get("tr_max_hops"))
+                    tr_queries = int(request.form.get("tr_queries"))
+                    tr_wait = float(request.form.get("tr_wait"))
+                    result, status = traceroute_host(
+                        host, tr_max_hops, tr_wait, tr_queries
+                    )
+                    params = {
+                        "max_hops": tr_max_hops,
+                        "q": tr_queries,
+                        "wait": tr_wait
+                    }
+                    Log.save("traceroute", host, params, status, str(result))
+
+                case "nslookup":
+                    ns_type = str(request.form.get("ns_type"))
+                    dns_server = str(request.form.get("dns_server"))
+                    result, status = nslookup(host, ns_type, dns_server)
+                    params = {"ns_type": ns_type, "dns_server": dns_server}
+                    Log.save("nslookup", host, params, status, str(result))
+
+                case _:
+                    flash("❌ Unknown command", "danger")
 
     return render_template(
         "index.html", result=result, status=status, action=action
