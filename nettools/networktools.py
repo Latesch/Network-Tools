@@ -84,7 +84,10 @@ def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
 
         if "timed out" in output.lower() or "no response" in output.lower():
             status = "danger"
-        elif "non-existent domain" in output.lower() or "can't find" in output.lower():
+        elif (
+            "non-existent domain" in output.lower()
+            or "can't find" in output.lower()
+        ):
             status = "danger"
         elif "name:" in output.lower() and "address" in output.lower():
             status = "ok"
@@ -94,12 +97,17 @@ def nslookup(host, qtype="A", dns_server="8.8.8.8", timeout=2):
         return output.strip(), status
 
     except subprocess.TimeoutExpired:
-        return f"*** Timeout: no response from DNS server {dns_server}", "danger"
+        return (
+            f"*** Timeout: no response from DNS server {dns_server}",
+            "danger",
+        )
     except Exception as e:
         return f"Error while running nslookup: {e}", "danger"
 
 
-def ssh_command(host, username, password, command, model="cisco", port=22, timeout=5):
+def ssh_command(
+    host, username, password, command, model="cisco", port=22, timeout=5
+):
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -148,7 +156,9 @@ def ssh_command(host, username, password, command, model="cisco", port=22, timeo
         return f"SSH error: {e}", "danger"
 
 
-def telnet_command(host, username, password, command, model="cisco", port=23, timeout=5):
+def telnet_command(
+    host, username, password, command, model="cisco", port=23, timeout=5
+):
     try:
         tn = telnetlib.Telnet(host, port, timeout)
 
@@ -174,7 +184,10 @@ def telnet_command(host, username, password, command, model="cisco", port=23, ti
             chunk = tn.read_very_eager().decode("utf-8", errors="ignore")
             if chunk:
                 buffer += chunk
-                if any(buffer.strip().endswith(m.decode()) for m in end_markers):
+                if any(
+                    buffer.strip().endswith(m.decode())
+                    for m in end_markers
+                ):
                     break
             if time.time() - start_time > timeout:
                 break

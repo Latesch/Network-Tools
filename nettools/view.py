@@ -1,5 +1,7 @@
-from .networktools import ping_host, traceroute_host, nslookup, ssh_command, telnet_command
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from .networktools import ping_host, traceroute_host, nslookup
+from .networktools import ssh_command, telnet_command
+from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import request, jsonify
 from flask_login import login_user, logout_user, login_required
 from .models import User, Log
 from .app import db, login_manager
@@ -47,26 +49,37 @@ def index():
 
         if not valid_ip(host):
             flash("❌ Некорректный IP или доменное имя", "danger")
-            return render_template("index.html", result=None, status=None, action=command)
-        else:        
+            return render_template(
+                "index.html", result=None, status=None, action=command
+            )
+        else:
             if command == "ping":
                 ping_timeout = float(request.form.get("ping_timeout"))
                 ping_count = int(request.form.get("ping_count"))
                 result, status = ping_host(host, ping_count, ping_timeout)
-                Log.save("ping", host, {"count": ping_count, "timeout": ping_timeout}, status, str(result))
+                params = {"count": ping_count, "timeout": ping_timeout}
+                Log.save("ping", host, params, status, str(result))
             elif command == "traceroute":
                 tr_max_hops = int(request.form.get("tr_max_hops"))
                 tr_queries = int(request.form.get("tr_queries"))
                 tr_wait = float(request.form.get("tr_wait"))
-                result, status = traceroute_host(host, tr_max_hops, tr_wait, tr_queries)
-                Log.save("traceroute", host, {"max_hops": tr_max_hops, "q": tr_queries, "wait": tr_wait}, status, str(result))
+                result, status = traceroute_host(
+                    host, tr_max_hops, tr_wait, tr_queries
+                )
+                params = {
+                    "max_hops": tr_max_hops, "q": tr_queries, "wait": tr_wait
+                }
+                Log.save("traceroute", host, params, status, str(result))
             elif command == "nslookup":
                 ns_type = str(request.form.get("ns_type"))
                 dns_server = str(request.form.get("dns_server"))
                 result, status = nslookup(host, ns_type, dns_server)
-                Log.save("nslookup", host, {"ns_type": ns_type, "dns_server": dns_server}, status, str(result))
+                params = {"ns_type": ns_type, "dns_server": dns_server}
+                Log.save("nslookup", host, params, status, str(result))
 
-    return render_template("index.html", result=result, status=status, action=action)
+    return render_template(
+        "index.html", result=result, status=status, action=action
+    )
 
 
 @login_manager.user_loader
@@ -126,7 +139,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash("✅ Пользователь успешно зарегистрирован! Войдите в систему.", "ok")
+        flash(
+            "✅ Пользователь успешно зарегистрирован! "
+            "Войдите в систему.",
+            "ok",
+        )
         return redirect(url_for("main.login"))
 
     return render_template("register.html")
@@ -178,6 +195,7 @@ def export_json():
     ]
     return jsonify(data)
 
+
 @bp.route("/connect", methods=["GET", "POST"])
 @login_required
 def connect():
@@ -192,8 +210,12 @@ def connect():
         command = request.form.get("command")
 
         if protocol == "ssh":
-            output, status = ssh_command(host, username, password, command, model)
+            output, status = ssh_command(
+                host, username, password, command, model
+            )
         elif protocol == "telnet":
-            output, status = telnet_command(host, username, password, command, model)
+            output, status = telnet_command(
+                host, username, password, command, model
+            )
 
     return render_template("connect.html", output=output, status=status)
