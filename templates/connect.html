@@ -1,12 +1,17 @@
 {% extends "base.html" %}
+{% block title %}NetTools — Подключение{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2 class="mb-4">Подключение к устройству</h2>
+<div class="card shadow-sm p-4">
+  <h2 class="mb-4">
+    <i class="bi bi-plug-fill me-2"></i> Подключение к устройству
+  </h2>
 
   <form method="post">
     <div class="mb-3">
-      <label for="protocol" class="form-label">Протокол</label>
+      <label for="protocol" class="form-label">
+        <i class="bi bi-diagram-2-fill me-1"></i> Протокол
+      </label>
       <select name="protocol" id="protocol" class="form-select">
         <option value="ssh" {% if request.form.get('protocol') == 'ssh' %}selected{% endif %}>SSH</option>
         <option value="telnet" {% if request.form.get('protocol') == 'telnet' %}selected{% endif %}>Telnet</option>
@@ -14,7 +19,9 @@
     </div>
 
     <div class="mb-3">
-      <label for="model" class="form-label">Вендор</label>
+      <label for="model" class="form-label">
+        <i class="bi bi-hdd-network me-1"></i> Вендор
+      </label>
       <select name="model" id="model" class="form-select">
         <option value="cisco" {% if request.form.get('model') == 'cisco' %}selected{% endif %}>Cisco</option>
         <option value="huawei" {% if request.form.get('model') == 'huawei' %}selected{% endif %}>Huawei</option>
@@ -25,37 +32,72 @@
     </div>
 
     <div class="mb-3">
-      <label for="host" class="form-label">Хост</label>
+      <label for="host" class="form-label">
+        <i class="bi bi-pc-display me-1"></i> Хост
+      </label>
       <input type="text" name="host" id="host" class="form-control"
-             value="{{ request.form.get('host', '') }}" required>
+             value="{{ request.form.get('host', '') }}" placeholder="192.168.1.1" required>
     </div>
 
     <div class="mb-3">
-      <label for="username" class="form-label">Логин</label>
+      <label for="username" class="form-label">
+        <i class="bi bi-person-fill me-1"></i> Логин
+      </label>
       <input type="text" name="username" id="username" class="form-control"
              value="{{ request.form.get('username', '') }}" required>
     </div>
 
     <div class="mb-3">
-      <label for="password" class="form-label">Пароль</label>
+      <label for="password" class="form-label">
+        <i class="bi bi-lock-fill me-1"></i> Пароль
+      </label>
       <input type="password" name="password" id="password" class="form-control" required>
     </div>
 
     <div class="mb-3">
-      <label for="command" class="form-label">Команда</label>
+      <label for="command" class="form-label">
+        <i class="bi bi-terminal-fill me-1"></i> Команда
+      </label>
       <input type="text" name="command" id="command" class="form-control"
              placeholder="Например: show system"
              value="{{ request.form.get('command', '') }}" required>
     </div>
 
-    <button type="submit" class="btn btn-primary">Выполнить</button>
+    <button type="submit" class="btn btn-primary w-100 mt-3">
+      <i class="bi bi-play-fill me-1"></i> Выполнить
+    </button>
   </form>
 
   {% if output %}
-  <div class="mt-4">
-    <h4>Результат:</h4>
-    <pre class="p-3 border rounded bg-body-secondary text-body">{{ output }}</pre>
+  <div class="alert alert-secondary shadow-sm mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span><i class="bi bi-card-text me-2"></i> Результат</span>
+      <button class="btn btn-sm btn-outline-primary" onclick="copyResult()">
+        <i class="bi bi-clipboard-check me-1"></i> Копировать
+      </button>      
+    </div>
+    <pre id="result-output" class="p-3 rounded bg-body-secondary text-body"><code>{{ output }}</code></pre>
   </div>
   {% endif %}
 </div>
+
+<script>
+function copyResult() {
+  const text = document.querySelector("#result-output").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.createElement("div");
+    toast.className = "toast align-items-center text-bg-success border-0 show position-fixed bottom-0 end-0 m-3";
+    toast.role = "alert";
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-clipboard-check me-1"></i> Результат скопирован!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  });
+}
+</script>
 {% endblock %}

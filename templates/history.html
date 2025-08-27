@@ -1,61 +1,77 @@
 {% extends "base.html" %}
 
+{% block title %}NetTools — История{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2 class="mb-4">История логов</h2>
+<div class="card shadow-sm p-4">
+  <h2 class="mb-4"><i class="bi bi-clock-history me-2"></i> История логов</h2>
 
   {% if logs %}
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Время</th>
-          <th>Действие</th>
-          <th>Хост</th>
-          <th>Статус</th>
-          <th>Действия</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for log in logs %}
-        <tr>
-          <td>{{ log.id }}</td>
-          <td>{{ log.timestamp }}</td>
-          <td>{{ log.action }}</td>
-          <td>{{ log.host }}</td>
-          <td>
-            {% if log.status == "ok" %}
-              ✅ Успех
-            {% else %}
-              ❌ Ошибка
-            {% endif %}
-          </td>
-          <td>
-            <a href="{{ url_for('main.history_detail', log_id=log.id) }}" class="btn btn-sm btn-outline-primary">Детали</a>
-            <form action="{{ url_for('main.del_log_history', log_id=log.id) }}" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th><i class="bi bi-hash"></i> ID</th>
+            <th><i class="bi bi-calendar-event"></i> Время</th>
+            <th><i class="bi bi-terminal"></i> Действие</th>
+            <th><i class="bi bi-hdd-network"></i> Хост</th>
+            <th><i class="bi bi-flag"></i> Статус</th>
+            <th><i class="bi bi-gear"></i> Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.id }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.host }}</td>
+            <td>
+              {% if log.status == "ok" %}
+                <span class="text-success">
+                  <i class="bi bi-check-circle-fill me-1"></i> Успех
+                </span>
+              {% else %}
+                <span class="text-danger">
+                  <i class="bi bi-x-circle-fill me-1"></i> Ошибка
+                </span>
+              {% endif %}
+            </td>
+            <td class="d-flex gap-2">
+              <a href="{{ url_for('main.history_detail', log_id=log.id) }}" 
+                 class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-info-circle me-1"></i> Детали
+              </a>
+              <form action="{{ url_for('main.del_log_history', log_id=log.id) }}" 
+                    method="post" class="m-0">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash me-1"></i> Удалить
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-<div class="d-flex gap-2 mt-3">
-  <form action="{{ url_for('main.delete_history') }}" method="post">
-    <button type="submit" class="btn btn-danger">
-      🗑️ Удалить всю историю
-    </button>
-  </form>
+    <div class="d-flex gap-2 mt-3">
+      <form action="{{ url_for('main.delete_history') }}" method="post">
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash-fill me-1"></i> Удалить всю историю
+        </button>
+      </form>
 
-  <a href="{{ url_for('main.export_json') }}" class="btn btn-outline-success">
-    ⬇️ Export JSON
-  </a>
-</div>
-
+      <a href="{{ url_for('main.export_json') }}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-arrow-down me-1"></i> Export JSON
+      </a>
+    </div>
 
   {% else %}
-    <p>История пуста.</p>
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+      <i class="bi bi-info-circle-fill me-2"></i>
+      История пуста.
+    </div>
   {% endif %}
 </div>
 {% endblock %}

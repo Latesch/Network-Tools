@@ -48,7 +48,7 @@ def index():
         command = action
 
         if not valid_ip(host):
-            flash("❌ Некорректный IP или доменное имя", "danger")
+            flash("Некорректный IP или доменное имя", "danger")
             return render_template(
                 "index.html", result=None, status=None, action=command
             )
@@ -83,7 +83,7 @@ def index():
                     Log.save("nslookup", host, params, status, str(result))
 
                 case _:
-                    flash("❌ Unknown command", "danger")
+                    flash("Unknown command", "danger")
 
     return render_template(
         "index.html", result=result, status=status, action=action
@@ -104,15 +104,15 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if not user:
-            flash("❌ Пользователь не найден", "danger")
+            flash("Пользователь не найден", "danger")
             return redirect(url_for("main.login"))
 
         if not user.check_password(password):
-            flash("⚠️ Неверный пароль", "warn")
+            flash("Неверный пароль", "warn")
             return redirect(url_for("main.login"))
 
         login_user(user)
-        flash(f"✅ Добро пожаловать, {user.username}!", "ok")
+        flash(f"Добро пожаловать, {user.username}!", "ok")
         return redirect(url_for("main.index"))
 
     return render_template("login.html")
@@ -134,11 +134,11 @@ def register():
         confirm_password = request.form["confirm_password"]
 
         if User.query.filter_by(username=username).first():
-            flash("❌ Такой пользователь уже есть", "danger")
+            flash("Такой пользователь уже есть", "danger")
             return redirect(url_for("main.register"))
 
         if password != confirm_password:
-            flash("⚠️ Пароли не совпадают", "warn")
+            flash("Пароли не совпадают", "warn")
             return redirect(url_for("main.register"))
 
         new_user = User(username=username)
@@ -148,7 +148,7 @@ def register():
         db.session.commit()
 
         flash(
-            "✅ Пользователь успешно зарегистрирован! "
+            "Пользователь успешно зарегистрирован! "
             "Войдите в систему.",
             "ok",
         )
@@ -162,7 +162,7 @@ def register():
 def users():
     if current_user.role != "admin":
         flash(
-            "🚫 Только администратор может просматривать пользователей.",
+            "Только администратор может просматривать пользователей.",
             "danger"
         )
         return redirect(url_for("main.index"))
@@ -175,13 +175,13 @@ def users():
 @login_required
 def delete_user(user_id):
     if current_user.role != "admin":
-        flash("🚫 Только администратор может удалять пользователей.", "danger")
+        flash("Только администратор может удалять пользователей.", "danger")
         return redirect(url_for("main.users"))
 
     if User.delete_user(user_id):
-        flash("✅ Пользователь удалён.", "ok")
+        flash("Пользователь удалён.", "ok")
     else:
-        flash("🚫 Пользователь не найден или это администратор.", "danger")
+        flash("Пользователь не найден или это администратор.", "danger")
 
     return redirect(url_for("main.users"))
 

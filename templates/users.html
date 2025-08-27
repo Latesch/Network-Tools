@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 
+{% block title %}NetTools — Пользователи{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2 class="mb-4">👤 Управление пользователями</h2>
+<div class="card shadow-sm p-4">
+  <h2 class="mb-4">
+    <i class="bi bi-people-fill me-2"></i> Управление пользователями
+  </h2>
 
   {% if users %}
-    <table class="table table-striped">
-      <thead>
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
         <tr>
-          <th>ID</th>
-          <th>Имя пользователя</th>
-          <th>Роль</th>
-          <th>Действия</th>
+          <th><i class="bi bi-hash me-1"></i>ID</th>
+          <th><i class="bi bi-person me-1"></i>Имя пользователя</th>
+          <th><i class="bi bi-shield-lock me-1"></i>Роль</th>
+          <th><i class="bi bi-gear me-1"></i>Действия</th>
         </tr>
       </thead>
       <tbody>
@@ -19,14 +23,28 @@
         <tr>
           <td>{{ user.id }}</td>
           <td>{{ user.username }}</td>
-          <td>{{ user.role }}</td>
+          <td>
+            {% if user.role == "admin" %}
+              <span class="badge bg-danger">
+                <i class="bi bi-shield-lock-fill me-1"></i> Admin
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">
+                <i class="bi bi-person-fill me-1"></i> {{ user.role }}
+              </span>
+            {% endif %}
+          </td>
           <td>
             {% if user.role != "admin" %}
-            <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-            </form>
+              <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash me-1"></i> Удалить
+                </button>
+              </form>
             {% else %}
-              <span class="text-muted">🚫 Нельзя удалить admin</span>
+              <span class="text-muted">
+                <i class="bi bi-x-circle me-1"></i> Нельзя удалить admin
+              </span>
             {% endif %}
           </td>
         </tr>
@@ -34,7 +52,10 @@
       </tbody>
     </table>
   {% else %}
-    <p>Пользователи не найдены.</p>
+    <div class="alert alert-info d-flex align-items-center">
+      <i class="bi bi-info-circle-fill me-2"></i>
+      Пользователи не найдены.
+    </div>
   {% endif %}
 </div>
 {% endblock %}

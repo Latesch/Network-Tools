@@ -3,31 +3,46 @@
 {% block title %}Вход — NetTools{% endblock %}
 
 {% block content %}
-  <h1 class="h4 mb-4">Вход в систему</h1>
+<div class="card shadow-sm p-4 mx-auto" style="max-width: 400px;">
+  <h2 class="h5 mb-4 d-flex align-items-center">
+    <i class="bi bi-box-arrow-in-right me-2 text-primary"></i>
+    Вход в систему
+  </h2>
 
-  <form method="POST" action="{{ url_for('main.login') }}" class="card p-4 shadow-sm">
+  <form method="POST" action="{{ url_for('main.login') }}">
     <div class="mb-3">
-      <label for="username" class="form-label">Имя пользователя</label>
+      <label for="username" class="form-label">
+        <i class="bi bi-person me-1"></i> Имя пользователя
+      </label>
       <input type="text" name="username" id="username" class="form-control" required>
     </div>
 
     <div class="mb-3">
-      <label for="password" class="form-label">Пароль</label>
+      <label for="password" class="form-label">
+        <i class="bi bi-lock me-1"></i> Пароль
+      </label>
       <input type="password" name="password" id="password" class="form-control" required>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100">Войти</button>
+    <button type="submit" class="btn btn-primary w-100">
+      <i class="bi bi-door-open me-1"></i> Войти
+    </button>
   </form>
 
   {% if error %}
-    <div class="alert alert-danger mt-3" role="alert">
-      {{ error }}
-    </div>
+  <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
+    <i class="bi bi-x-circle-fill me-2"></i>
+    {{ error }}
+  </div>
   {% endif %}
 
   <div class="mt-3 text-center">
-    <p>Нет аккаунта? 
-      <a href="{{ url_for('main.register') }}">Зарегистрироваться</a>
+    <p>
+      Нет аккаунта? 
+      <a href="{{ url_for('main.register') }}" class="text-decoration-none">
+        Зарегистрироваться <i class="bi bi-person-plus"></i>
+      </a>
     </p>
   </div>
+</div>
 {% endblock %}

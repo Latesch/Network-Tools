@@ -1,19 +1,53 @@
 {% extends "base.html" %}
-{% block title %}Детали лога{% endblock %}
+{% block title %}NetTools — Детали лога{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2>Детали лога #{{ log.id }}</h2>
-  <ul class="list-group">
-    <li class="list-group-item"><strong>Время:</strong> {{ log.timestamp }}</li>
-    <li class="list-group-item"><strong>Действие:</strong> {{ log.action }}</li>
-    <li class="list-group-item"><strong>Хост:</strong> {{ log.host }}</li>
-    <li class="list-group-item"><strong>Параметры:</strong> {{ log.params }}</li>
-    <li class="list-group-item"><strong>Статус:</strong> {{ log.status }}</li>
-    <li class="list-group-item"><strong>Вывод:</strong><br>
-      <pre>{{ log.output }}</pre>
+<div class="card shadow-sm p-4">
+  <h2 class="mb-4">
+    <i class="bi bi-file-text me-2"></i> Детали лога #{{ log.id }}
+  </h2>
+
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <i class="bi bi-calendar-event me-2 text-muted"></i>
+      <strong>Время:</strong> {{ log.timestamp }}
+    </li>
+    <li class="list-group-item">
+      <i class="bi bi-terminal me-2 text-muted"></i>
+      <strong>Действие:</strong> {{ log.action }}
+    </li>
+    <li class="list-group-item">
+      <i class="bi bi-hdd-network me-2 text-muted"></i>
+      <strong>Хост:</strong> {{ log.host }}
+    </li>
+    <li class="list-group-item">
+      <i class="bi bi-sliders me-2 text-muted"></i>
+      <strong>Параметры:</strong> {{ log.params }}
+    </li>
+    <li class="list-group-item">
+      <i class="bi bi-flag me-2 text-muted"></i>
+      <strong>Статус:</strong>
+      {% if log.status == "ok" %}
+        <span class="text-success">
+          <i class="bi bi-check-circle-fill me-1"></i> Успех
+        </span>
+      {% else %}
+        <span class="text-danger">
+          <i class="bi bi-x-circle-fill me-1"></i> Ошибка
+        </span>
+      {% endif %}
+    </li>
+    <li class="list-group-item">
+      <i class="bi bi-code-slash me-2 text-muted"></i>
+      <strong>Вывод:</strong><br>
+      <pre class="p-3 rounded bg-body-secondary text-body">{{ log.output }}</pre>
     </li>
   </ul>
-  <a href="{{ url_for('main.history') }}" class="btn btn-secondary mt-3">Назад</a>
+
+  <div class="mt-4">
+    <a href="{{ url_for('main.history') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left-circle me-1"></i> Назад
+    </a>
+  </div>
 </div>
 {% endblock %}

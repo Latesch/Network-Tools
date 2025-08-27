@@ -1,124 +1,123 @@
 {% extends "base.html" %}
-
-{% block title %}NetTools - Главная{% endblock %}
+{% block title %}NetTools — Главная{% endblock %}
 
 {% block content %}
-  <h1 class="mb-4">Network Tools</h1>
+<div class="card shadow-sm p-4">
+  <h2 class="mb-4">Сетевые утилиты</h2>
 
-  <ul class="nav nav-tabs" id="myTab" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="commands-tab" data-bs-toggle="tab"
-              data-bs-target="#commands" type="button" role="tab">
-        Сетевые команды
-      </button>
-    </li>
-  </ul>
-
-  <div class="tab-content mt-3" id="myTabContent">
-
-    <div class="tab-pane fade show active" id="commands" role="tabpanel">
-      <form method="post">
-        <div class="mb-3">
-          <label for="host" class="form-label">Хост/IP/Домен</label>
-          <input type="text" class="form-control" id="host" name="host" required>
-        </div>
-
-        <div class="mb-3">
-          <label for="action" class="form-label">Действие</label>
-          <select class="form-select" id="action" name="action">
-            <option value="ping" {% if action == "ping" %}selected{% endif %}>Ping</option>
-            <option value="traceroute" {% if action == "traceroute" %}selected{% endif %}>Traceroute</option>
-            <option value="nslookup" {% if action == "nslookup" %}selected{% endif %}>Nslookup</option>
-          </select>
-        </div>
-
-        <div id="ping-options" class="border rounded p-3 mb-3">
-          <h5>Параметры Ping</h5>
-          <div class="mb-3">
-            <label for="ping_count" class="form-label">Количество пакетов</label>
-            <input type="number" class="form-control" id="ping_count" name="ping_count" value="4" min="1" max="20">
-          </div>
-          <div class="mb-3">
-            <label for="ping_timeout" class="form-label">Таймаут (сек.)</label>
-            <input type="number" class="form-control" id="ping_timeout" name="ping_timeout" value="1" min="1" max="10">
-          </div>
-        </div>
-
-        <div id="traceroute-options" class="border rounded p-3 mb-3 d-none">
-          <h5>Параметры Traceroute</h5>
-          <div class="mb-3">
-            <label for="tr_max_hops" class="form-label">Макс. число hops</label>
-            <input type="number" class="form-control" id="tr_max_hops" name="tr_max_hops" value="15" min="1" max="64">
-          </div>
-          <div class="mb-3">
-            <label for="tr_queries" class="form-label">Запросов на hop</label>
-            <input type="number" class="form-control" id="tr_queries" name="tr_queries" value="1" min="1" max="10">
-          </div>
-          <div class="mb-3">
-            <label for="tr_wait" class="form-label">Таймаут ожидания (сек.)</label>
-            <input type="number" class="form-control" id="tr_wait" name="tr_wait" value="2" min="1" max="10">
-          </div>
-        </div>
-
-        <div id="nslookup-options" class="border rounded p-3 mb-3 d-none">
-          <h5>Параметры Nslookup</h5>
-          <div class="mb-3">
-            <label for="ns_type" class="form-label">Тип записи</label>
-            <select class="form-select" id="ns_type" name="ns_type">
-              <option value="A">A (IPv4 адрес)</option>
-              <option value="AAAA">AAAA (IPv6 адрес)</option>
-              <option value="MX">MX (почтовые сервера)</option>
-              <option value="NS">NS (DNS-сервера)</option>
-              <option value="CNAME">CNAME (каноническое имя)</option>
-              <option value="TXT">TXT (текстовые записи)</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="dns_server" class="form-label">DNS-сервер</label>
-            <input type="text" class="form-control" id="dns_server" name="dns_server" value="8.8.8.8">
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Выполнить</button>
-      </form>
-
-      {% if result %}
-        <hr>
-        <h3>Результат:</h3>
-        {% if status == "ok" %}
-          <div class="alert alert-success"><pre>{{ result }}</pre></div>
-        {% elif status == "warn" %}
-          <div class="alert alert-warning"><pre>{{ result }}</pre></div>
-        {% elif status == "danger" %}
-          <div class="alert alert-danger"><pre>{{ result }}</pre></div>
-        {% else %}
-          <pre class="bg-dark p-3 rounded">{{ result }}</pre>
-        {% endif %}
-      {% endif %}
+  <form method="post">
+    <div class="mb-3">
+      <label for="host" class="form-label"><i class="bi bi-globe me-1"></i> Хост</label>
+      <input type="text" class="form-control" id="host" name="host" placeholder="example.com" required>
     </div>
+
+    <div class="mb-3">
+      <label for="action" class="form-label"><i class="bi bi-tools me-1"></i> Действие</label>
+      <select class="form-select" id="action" name="action" onchange="toggleOptions()">
+        <option value="ping" {% if request.form.get("action") == "ping" %}selected{% endif %}>Ping</option>
+        <option value="traceroute" {% if request.form.get("action") == "traceroute" %}selected{% endif %}>Traceroute</option>
+        <option value="nslookup" {% if request.form.get("action") == "nslookup" %}selected{% endif %}>NSLookup</option>
+      </select>
+    </div>
+
+    <div id="pingOptions" class="mb-3">
+      <label for="count" class="form-label"><i class="bi bi-box me-1"></i> Количество пакетов</label>
+      <input type="number" class="form-control" id="count" name="ping_count" value="4" min="1" max="20">
+      <div class="form-text">Максимум 20 пакетов</div>
+
+      <label for="timeout" class="form-label mt-2"><i class="bi bi-hourglass-split me-1"></i> Таймаут (секунды)</label>
+      <input type="number" class="form-control" id="timeout" name="ping_timeout" value="2" min="1" max="10">
+    </div>
+
+    <div id="tracerouteOptions" class="mb-3 d-none">
+      <label for="max_hops" class="form-label"><i class="bi bi-signpost-split me-1"></i> Максимум хопов</label>
+      <input type="number" class="form-control" id="max_hops" name="tr_max_hops" value="30" min="1" max="64">
+
+      <label for="queries" class="form-label mt-2"><i class="bi bi-arrow-repeat me-1"></i> Количество попыток</label>
+      <input type="number" class="form-control" id="queries" name="tr_queries" value="3" min="1" max="5">
+
+      <label for="wait" class="form-label mt-2"><i class="bi bi-stopwatch me-1"></i> Задержка (секунды)</label>
+      <input type="number" class="form-control" id="wait" name="tr_wait" value="3" min="1" max="10">
+    </div>
+
+    <div id="nslookupOptions" class="mb-3 d-none">
+      <label for="ns_type" class="form-label"><i class="bi bi-card-list me-1"></i> Тип записи</label>
+      <select class="form-select" id="ns_type" name="ns_type">
+        <option value="A">A (IPv4)</option>
+        <option value="AAAA">AAAA (IPv6)</option>
+        <option value="MX">MX (Mail)</option>
+        <option value="NS">NS (Name Server)</option>
+      </select>
+
+      <label for="dns_server" class="form-label mt-2"><i class="bi bi-hdd-network me-1"></i> DNS-сервер</label>
+      <input list="dns-presets" class="form-control" id="dns_server" name="dns_server" placeholder="8.8.8.8">
+      <datalist id="dns-presets">
+        <option value="8.8.8.8">Google</option>
+        <option value="1.1.1.1">Cloudflare</option>
+        <option value="9.9.9.9">Quad9</option>
+      </datalist>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mt-3">
+      <i class="bi bi-rocket-takeoff me-1"></i> Выполнить
+    </button>
+  </form>
+</div>
+
+{% if result %}
+<div class="alert alert-{{ 'success' if status=='ok' else ('danger' if status=='danger' else 'warning') }} shadow-sm mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="d-flex align-items-center">
+      {% if status == "ok" %}
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+      {% elif status == "danger" %}
+        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+      {% else %}
+        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+      {% endif %}
+      Результат — <strong class="ms-1">{{ status|capitalize }}</strong>
+    </span>
+    <button class="btn btn-sm btn-outline-primary" onclick="copyResult()">
+      <i class="bi bi-clipboard me-1"></i> Копировать
+    </button>    
   </div>
+  <pre id="result-output" class="p-3 rounded bg-body-secondary text-body"><code>{{ result }}</code></pre>
+</div>
+{% endif %}
 
-  <script>
-    const actionSelect = document.getElementById("action");
-    const pingOptions = document.getElementById("ping-options");
-    const tracerouteOptions = document.getElementById("traceroute-options");
-    const nslookupOptions = document.getElementById("nslookup-options");
+<script>
+const blocks = {
+  ping: document.getElementById("pingOptions"),
+  traceroute: document.getElementById("tracerouteOptions"),
+  nslookup: document.getElementById("nslookupOptions"),
+};
 
-    function toggleOptions() {
-      pingOptions.classList.add("d-none");
-      tracerouteOptions.classList.add("d-none");
-      nslookupOptions.classList.add("d-none");
+function toggleOptions() {
+  Object.values(blocks).forEach(b => b.classList.add("d-none"));
+  const value = document.getElementById("action").value;
+  if (blocks[value]) blocks[value].classList.remove("d-none");
+}
 
-      if (actionSelect.value === "ping") {
-        pingOptions.classList.remove("d-none");
-      } else if (actionSelect.value === "traceroute") {
-        tracerouteOptions.classList.remove("d-none");
-      } else if (actionSelect.value === "nslookup") {
-        nslookupOptions.classList.remove("d-none");
-      }
-    }
+function copyResult() {
+  const text = document.querySelector("#result-output").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.createElement("div");
+    toast.className = "toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-3";
+    toast.setAttribute("role", "alert");
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-check-circle me-2"></i> Результат скопирован!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>`;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    toast.addEventListener("hidden.bs.toast", () => toast.remove());
+  });
+}
 
-    actionSelect.addEventListener("change", toggleOptions);
-    toggleOptions();
-  </script>
+document.addEventListener("DOMContentLoaded", toggleOptions);
+</script>
 {% endblock %}
