@@ -206,7 +206,7 @@ def ssh_command(
         if chan.recv_ready():
             _ = chan.recv(4096)
 
-        if model.lower() in PAGING_COMMANDS:
+        if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
             for cmd in PAGING_COMMANDS[model.lower()]:
                 chan.send(cmd + "\r")
                 time.sleep(0.5)
@@ -215,7 +215,7 @@ def ssh_command(
 
         chan.send(command + "\r")
         buffer = ""
-        end_markers = ["#", ">"]
+        end_markers = ["#", ">", "$"]
 
         while True:
             if chan.recv_ready():
@@ -282,7 +282,7 @@ def telnet_command(
         if idx >= 0:
             tn.write(password.encode("utf-8") + b"\r")
 
-        if model.lower() in PAGING_COMMANDS:
+        if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
             for cmd in PAGING_COMMANDS[model.lower()]:
                 tn.write(cmd.encode("utf-8") + b"\r")
                 time.sleep(0.5)
@@ -290,7 +290,7 @@ def telnet_command(
 
         tn.write(command.encode("utf-8") + b"\r")
         buffer = ""
-        end_markers = [b"#", b">"]
+        end_markers = [b"#", b">", b"$"]
         start_time = time.time()
 
         while True:
