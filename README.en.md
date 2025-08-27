@@ -1,25 +1,41 @@
 # NetTools Web
 
-A web application built with **Flask** that provides network utilities.
-It allows you to run basic network commands via a web interface:
+A **Flask**-based web application with built-in network utilities.
+It allows you to run basic network commands through a web interface:
 
-* `Ping` with customizable parameters (packet count, timeout, etc.);
-* `Traceroute` with configurable options;
-* Color-coded results (success, warning, error);
-* Logging of all requests into an SQLite database;
-* View history and details of each request;
-* Delete individual logs or the entire history;
-* User authentication (Flask-Login) with password hashing;
-* User registration via web interface;
-* User roles (regular user / administrator);
-* Access control:
+* **Network commands via web interface**:
 
-  * guest → only execute commands;
-  * authenticated user → execute commands + view/manage logs.
+  * `Ping` with configurable parameters (packet count, timeout, etc.);
+  * `Traceroute` with customizable options;
+  * `NSLookup` with record type and DNS server selection.
+
+* **Modern interface**:
+
+  * Bootstrap 5 and Bootstrap Icons;
+  * color-coded results (success, warning, error);
+  * cards, tables, and UI elements in a unified style.
+
+* **Log management**:
+
+  * automatic logging of all requests in **SQLite**;
+  * view history and detailed logs of each request;
+  * delete individual records or the entire history;
+  * export logs to JSON.
+
+* **Users and roles**:
+
+  * authentication and registration via Flask-Login;
+  * password hashing;
+  * user roles (**user** / **admin**);
+  * access control:
+
+    * guest → only execute commands,
+    * authenticated user → execute commands and manage logs,
+    * admin → all user features plus user management.
 
 ---
 
-## 🚀 Installation & Run
+## 🚀 Installation and Run
 
 ### 1. Clone the repository
 
@@ -34,7 +50,7 @@ cd Network-Tools
 python3 -m venv .venv
 ```
 
-Activation:
+Activate:
 
 * Linux/macOS:
 
@@ -59,7 +75,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 5. Run the application
+### 5. Run the app
 
 #### Local run (development)
 
@@ -72,13 +88,13 @@ By default, the app will be available at:
 
 ---
 
-#### Access from other devices (external)
+#### Access from other devices (external access)
 
 ```bash
 flask run --host=0.0.0.0
 ```
 
-If your computer IP is `192.168.1.10`, the app will be available at:
+If your machine has IP `192.168.1.10`, the app will be available at:
 👉 [http://192.168.1.10:5000](http://192.168.1.10:5000)
 
 ---
@@ -89,7 +105,7 @@ If your computer IP is `192.168.1.10`, the app will be available at:
 flask run --host=0.0.0.0 --port=8080
 ```
 
-Now the server is available on port `8080`:
+Now the server will run on port `8080`:
 👉 [http://192.168.1.10:8080](http://192.168.1.10:8080)
 
 ---
@@ -100,11 +116,11 @@ Now the server is available on port `8080`:
 Network-Tools/
 │
 ├── nettools/
-│   ├── app.py              # Flask application factory (create_app)
+│   ├── app.py              # Flask app factory (create_app)
 │   ├── extensions.py       # Extensions (db, login_manager, etc.)
 │   ├── models.py           # SQLAlchemy models (User, Log)
 │   ├── view.py             # Main routes (Blueprint "main")
-│   └── nettools.py         # Logic for ping and traceroute
+│   └── nettools.py         # Logic for ping/traceroute/ssh/telnet
 │
 ├── instance/               # Local data (ignored by Git)
 │   └── nettools.db         # SQLite database
@@ -116,7 +132,8 @@ Network-Tools/
 │   ├── register.html
 │   ├── connect.html
 │   ├── history.html
-│   └── history_detail.html
+│   ├── history_detail.html
+│   └── users.html
 │
 ├── static/                 # Static files (CSS, JS)
 │   ├── apple-touch-icon.png
@@ -125,20 +142,33 @@ Network-Tools/
 │   └── style.css
 │
 ├── requirements.txt        # Dependencies
-├── README.md               # Documentation project
-└── run.py                  # Entry point (flask run → create_app())
+├── .flaskenv               # Flask settings
+├── CONTRIBUTING.md         # Contribution guide
+└── README.md               # Project documentation
 ```
 
 ---
 
-## 🔑 Authentication & Roles
+## 🔑 Authentication and Roles
 
-Using **Flask-Login**.
+The app uses **Flask-Login** for authentication and session management.
 
-Users can register via `/register` (passwords are stored as hashes).
+* **Registration** is available at `/register`.
+  Passwords are securely hashed before being stored in the database.
 
-👉 Invalid login or password will trigger an error message.
-👉 Login/Logout button dynamically updates depending on auth state.
+* **Login** is available at `/login`.
+  Invalid credentials trigger an error notification.
+
+* The interface dynamically updates buttons:
+
+  * when logged in → username and **Logout** button;
+  * when logged out → **Login** button.
+
+### User roles
+
+* **Guest (unauthenticated)** — can run network commands but has no access to logs or user management.
+* **User** — can run commands, view, and manage log history.
+* **Admin** — has all user rights plus user management.
 
 ---
 
@@ -156,18 +186,18 @@ Users can register via `/register` (passwords are stored as hashes).
 
 ## 📌 TODO (future improvements)
 
-* Integration with **xterm.js** for live terminal;
-* Real-time interactive sessions;
+* Integration with xtermjs;
+* Interactive live sessions;
 * Ansible integration;
-* Network inventory database (auto-discovery);
+* Inventory database (auto-inventory);
 * SNMP/NetFlow integration;
-* Network topology visualization;
+* Network diagram/topology visualization;
 * Jumphost support;
 * OpenAPI.json.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Technologies
 
 * Python 3.x
 * Flask + Flask-Login
@@ -175,18 +205,18 @@ Users can register via `/register` (passwords are stored as hashes).
 * Bootstrap (via CDN)
 * PythonPing / Subprocess
 * Paramiko + telnetlib
-* Werkzeug (for password hashing)
+* Werkzeug (password hashing)
 
 ---
 
 ## 🤝 Contributing Guide
 
-[CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## 👤 Author
 
-Project created for **Python & Flask practice**.
+This project was created for practicing Python and Flask.
 Author: **Late**
 [Telegram @Latesch](https://t.me/Latesch)
