@@ -10,10 +10,13 @@ import re
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 PAGING_COMMANDS = {
-    "cisco": "terminal length 0",
-    "huawei": "screen-length 0 temporary",
-    "eltex": "terminal datadump",
-    "ecorouter": "terminal length 0",
+    "cisco": ["terminal length 0"],
+    "huawei": ["screen-length 0 temporary"],
+    "eltex": ["terminal datadump"],
+    "ecorouter": [
+        "configure terminal",
+        "terminal length 0"
+    ]
 }
 
 
@@ -204,10 +207,11 @@ def ssh_command(
             _ = chan.recv(4096)
 
         if model.lower() in PAGING_COMMANDS:
-            chan.send(PAGING_COMMANDS[model.lower()] + "\r")
-            time.sleep(0.5)
-            while chan.recv_ready():
-                chan.recv(4096)
+            for cmd in PAGING_COMMANDS[model.lower()]:
+                chan.send(cmd + "\r")
+                time.sleep(0.5)
+                while chan.recv_ready():
+                    chan.recv(4096)
 
         chan.send(command + "\r")
         buffer = ""
@@ -279,9 +283,10 @@ def telnet_command(
             tn.write(password.encode("utf-8") + b"\r")
 
         if model.lower() in PAGING_COMMANDS:
-            tn.write(PAGING_COMMANDS[model.lower()].encode("utf-8") + b"\r")
-            time.sleep(0.5)
-            tn.read_very_eager()
+            for cmd in PAGING_COMMANDS[model.lower()]:
+                tn.write(cmd.encode("utf-8") + b"\r")
+                time.sleep(0.5)
+                tn.read_very_eager()
 
         tn.write(command.encode("utf-8") + b"\r")
         buffer = ""
