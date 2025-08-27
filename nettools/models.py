@@ -19,6 +19,17 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(db.String(128), nullable=False)
     role: Mapped[str] = mapped_column(db.String(20), default="user")
 
+    @classmethod
+    def delete_user(cls, id: int) -> bool:
+        user = cls.query.get(id)
+        if user:
+            if user.role == "admin":
+                return False
+            db.session.delete(user)
+            db.session.commit()
+            return True
+        return False
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(
             password, method="pbkdf2:sha256"

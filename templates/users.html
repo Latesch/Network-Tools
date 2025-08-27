@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">👤 Управление пользователями</h2>
+
+  {% if users %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Имя пользователя</th>
+          <th>Роль</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            {% if user.role != "admin" %}
+            <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+            </form>
+            {% else %}
+              <span class="text-muted">🚫 Нельзя удалить admin</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Пользователи не найдены.</p>
+  {% endif %}
+</div>
+{% endblock %}

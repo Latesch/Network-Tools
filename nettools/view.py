@@ -2,7 +2,7 @@ from .networktools import ping_host, traceroute_host, nslookup
 from .networktools import ssh_command, telnet_command
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask import request, jsonify
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, Log
 from .app import db, login_manager
 import ipaddress
@@ -155,6 +155,35 @@ def register():
         return redirect(url_for("main.login"))
 
     return render_template("register.html")
+
+
+@bp.route("/users")
+@login_required
+def users():
+    if current_user.role != "admin":
+        flash(
+            "🚫 Только администратор может просматривать пользователей.",
+            "danger"
+        )
+        return redirect(url_for("main.index"))
+
+    users = User.query.all()
+    return render_template("users.html", users=users)
+
+
+@bp.route("/delete_user/<int:user_id>", methods=["POST"])
+@login_required
+def delete_user(user_id):
+    if current_user.role != "admin":
+        flash("🚫 Только администратор может удалять пользователей.", "danger")
+        return redirect(url_for("main.users"))
+
+    if User.delete_user(user_id):
+        flash("✅ Пользователь удалён.", "ok")
+    else:
+        flash("🚫 Пользователь не найден или это администратор.", "danger")
+
+    return redirect(url_for("main.users"))
 
 
 @bp.route('/history', methods=['GET'])
