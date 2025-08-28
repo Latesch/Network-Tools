@@ -25,7 +25,7 @@ def create_app():
         "sqlite:///nettools.db",
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = (
-        os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False") == "True"
+        os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False") == "True",
     )
 
     db.init_app(app)

@@ -3,5 +3,5 @@ FLASK_ENV=development
 
 SECRET_KEY=supersecretkey
 
-SQLALCHEMY_DATABASE_URI=sqlite:///instance/nettools.db
+SQLALCHEMY_DATABASE_URI=sqlite:///nettools.db
 SQLALCHEMY_TRACK_MODIFICATIONS=False

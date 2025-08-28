@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(
-            password, method="pbkdf2:sha256"
+            password, method="pbkdf2:sha256",
         )
 
     def check_password(self, password):
@@ -64,7 +64,7 @@ class Log(db.Model):
             host=host,
             params=params,
             status=status,
-            output=output
+            output=output,
         )
         db.session.add(log)
         db.session.commit()

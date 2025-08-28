@@ -3,12 +3,13 @@ import re
 import subprocess
 import sys
 import time
+from contextlib import closing
 
 import paramiko
 import telnetlib3
 from pythonping import ping
 
-ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+ANSI_ESCAPE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
 PAGING_COMMANDS = {
     "cisco": ["terminal length 0"],
@@ -16,8 +17,8 @@ PAGING_COMMANDS = {
     "eltex": ["terminal datadump"],
     "ecorouter": [
         "configure terminal",
-        "terminal length 0"
-    ]
+        "terminal length 0",
+    ],
 }
 
 
@@ -41,10 +42,7 @@ def ping_host(
     """
     try:
         result = ping(host, count=count, timeout=timeout)
-        if result.stats_packets_lost >= (count // 2):
-            status = "warn"
-        else:
-            status = "ok"
+        status = "warn" if result.stats_packets_lost >= (count // 2) else "ok"
         return result, status
     except OSError as e:
         return f"Ошибка сети: {e}", "danger"
@@ -54,7 +52,7 @@ def traceroute_host(
     host: str,
     max_hops: int = 15,
     timeout: int = 1,
-    queries: int = 1
+    queries: int = 1,
 ) -> tuple[str, str]:
     """
     Выполняет traceroute до указанного хоста.
@@ -72,37 +70,44 @@ def traceroute_host(
     """
     try:
         is_windows = sys.platform.startswith("win")
-        if is_windows:
-            cmd = [
+
+        cmd = (
+            [
                 "tracert",
-                "-h", str(max_hops),
-                "-w", f"{int(timeout * 1000)}",
+                "-h",
+                str(max_hops),
+                "-w",
+                f"{int(timeout * 1000)}",
                 host,
             ]
-        else:
-            cmd = [
+            if is_windows
+            else [
                 "traceroute",
-                "-m", str(max_hops),
-                "-q", str(queries),
-                "-w", str(int(timeout)),
+                "-m",
+                str(max_hops),
+                "-q",
+                str(queries),
+                "-w",
+                str(int(timeout)),
                 host,
             ]
+        )
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = (result.stdout or "") + "\n" + (result.stderr or "")
 
         if is_windows:
-            if "request timed out" in output.lower():
-                status = "warn"
-            elif host.lower() in output.lower():
-                status = "ok"
-            else:
-                status = "danger"
+            status = (
+                "warn"
+                if "request timed out" in output.lower()
+                else "ok" if host.lower() in output.lower() else "danger"
+            )
         else:
-            if host.lower() in output.lower():
-                status = "warn" if "*" in output else "ok"
-            else:
-                status = "danger"
+            status = (
+                "warn"
+                if host.lower() in output.lower() and "*" in output
+                else "ok" if host.lower() in output.lower() else "danger"
+            )
 
         return output.strip(), status
 
@@ -114,7 +119,7 @@ def nslookup(
     host: str,
     qtype: str = "A",
     dns_server: str = "8.8.8.8",
-    timeout: int = 2
+    timeout: int = 2,
 ) -> tuple[str, str]:
     """
     Выполняет DNS-запрос (nslookup).
@@ -131,27 +136,33 @@ def nslookup(
     tuple[str, str]: (результат запроса, статус: "ok", "warn" или "danger").
     """
     try:
-        cmd = ["nslookup", "-type=" + qtype, host, dns_server]
+        cmd = ["nslookup", f"-type={qtype}", host, dns_server]
 
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=timeout
+            timeout=timeout,
         )
         output = (result.stdout or "") + "\n" + (result.stderr or "")
+        lower_output = output.lower()
 
-        if "timed out" in output.lower() or "no response" in output.lower():
-            status = "danger"
-        elif (
-            "non-existent domain" in output.lower()
-            or "can't find" in output.lower()
-        ):
-            status = "danger"
-        elif "name:" in output.lower() and "address" in output.lower():
-            status = "ok"
-        else:
-            status = "warn"
+        checks = [
+            (
+                lambda o: "timed out" in o or "no response" in o,
+                "danger",
+            ),
+            (
+                lambda o: "non-existent domain" in o or "can't find" in o,
+                "danger",
+            ),
+            (
+                lambda o: "name:" in o and "address" in o,
+                "ok",
+            ),
+        ]
+
+        status = next((s for cond, s in checks if cond(lower_output)), "warn")
 
         return output.strip(), status
 
@@ -161,7 +172,10 @@ def nslookup(
             "danger",
         )
     except Exception as e:
-        return f"Error while running nslookup: {e}", "danger"
+        return (
+            f"Error while running nslookup: {e}",
+            "danger",
+        )
 
 
 def ssh_command(
@@ -171,7 +185,7 @@ def ssh_command(
     command: str,
     model: str = "cisco",
     port: int = 22,
-    timeout: int = 5
+    timeout: int = 5,
 ) -> tuple[str, str]:
     """
     Выполняет SSH-подключение и выполнение команды.
@@ -190,59 +204,65 @@ def ssh_command(
     Returns:
     tuple[str, str]: (результат выполнения, статус: "ok" или "danger").
     """
-    client = None
-    chan = None
     try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(
-            host, port=port, username=username, password=password,
-            timeout=timeout, look_for_keys=False, allow_agent=False
-        )
+        with paramiko.SSHClient() as client:
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(
+                host,
+                port=port,
+                username=username,
+                password=password,
+                timeout=timeout,
+                look_for_keys=False,
+                allow_agent=False,
+            )
 
-        chan = client.invoke_shell()
-        chan.settimeout(timeout)
+            with closing(client.invoke_shell()) as chan:
+                chan.settimeout(timeout)
+                time.sleep(1)
 
-        time.sleep(1)
-        if chan.recv_ready():
-            _ = chan.recv(4096)
+                if chan.recv_ready():
+                    _ = chan.recv(4096)
 
-        if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
-            for cmd in PAGING_COMMANDS[model.lower()]:
-                chan.send(cmd + "\r")
-                time.sleep(0.5)
-                while chan.recv_ready():
-                    chan.recv(4096)
+                match model.lower():
+                    case "linux":
+                        pass
+                    case m if m in PAGING_COMMANDS:
+                        for cmd in PAGING_COMMANDS[m]:
+                            chan.send(cmd + "\r")
+                            time.sleep(0.5)
+                            while chan.recv_ready():
+                                chan.recv(4096)
+                    case _:
+                        pass
 
-        chan.send(command + "\r")
-        buffer = ""
-        end_markers = ["#", ">", "$"]
+                chan.send(command + "\r")
+                buffer = ""
+                end_markers = ["#", ">", "$"]
 
-        while True:
-            if chan.recv_ready():
-                chunk = chan.recv(4096).decode("utf-8", errors="ignore")
-                buffer += chunk
+                start_time = time.time()
+                while True:
+                    if chan.recv_ready():
+                        chunk = chan.recv(4096).decode(
+                            "utf-8",
+                            errors="ignore",
+                        )
+                        buffer += chunk
+                        if any(buffer.strip().endswith(m) for m in end_markers):
+                            break
+                    if time.time() - start_time > timeout:
+                        break
+                    time.sleep(0.1)
 
-                if any(buffer.strip().endswith(m) for m in end_markers):
-                    break
-            else:
-                time.sleep(0.1)
+                clean_output = ANSI_ESCAPE.sub("", buffer)
+                lines = clean_output.strip().splitlines()
+                if lines and command.split()[0] in lines[0]:
+                    lines = lines[1:]
 
-        clean_output = ANSI_ESCAPE.sub("", buffer)
-        lines = clean_output.strip().splitlines()
-        if lines and command.split()[0] in lines[0]:
-            lines = lines[1:]
-
-        return "\n".join(lines).strip(), "ok"
+                return "\n".join(lines).strip(), "ok"
 
     except Exception as e:
         return f"SSH error: {e}", "danger"
-
-    finally:
-        if chan:
-            chan.close()
-        if client:
-            client.close()
 
 
 def telnet_command(
@@ -252,7 +272,7 @@ def telnet_command(
     command: str,
     model: str = "cisco",
     port: int = 23,
-    timeout: int = 5
+    timeout: int = 5,
 ) -> tuple[str, str]:
     """
     Выполняет Telnet-подключение и выполнение команды (async).
@@ -271,21 +291,26 @@ def telnet_command(
     Returns:
     tuple[str, str]: (результат выполнения, статус: "ok" или "danger").
     """
+
     async def run_telnet():
-        reader, writer = await telnetlib3.open_connection(
+        async with telnetlib3.open_connection(
             host, port=port, connect_minwait=0.5, connect_maxwait=1.0
-        )
-        try:
+        ) as (reader, writer):
             await reader.readuntil(":", timeout=timeout)
             writer.write(username + "\n")
 
             await reader.readuntil(":", timeout=timeout)
             writer.write(password + "\n")
 
-            if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
-                for prep_cmd in PAGING_COMMANDS[model.lower()]:
-                    writer.write(prep_cmd + "\n")
-                    await asyncio.sleep(0.3)
+            match model.lower():
+                case "linux":
+                    pass
+                case m if m in PAGING_COMMANDS:
+                    for prep_cmd in PAGING_COMMANDS[m]:
+                        writer.write(prep_cmd + "\n")
+                        await asyncio.sleep(0.3)
+                case _:
+                    pass
 
             writer.write(command + "\n")
 
@@ -306,10 +331,6 @@ def telnet_command(
 
             clean_output = ANSI_ESCAPE.sub("", buffer).strip()
             return clean_output, "ok"
-
-        finally:
-            writer.close()
-            await writer.wait_closed()
 
     try:
         return asyncio.run(asyncio.wait_for(run_telnet(), timeout=timeout))
