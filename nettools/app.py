@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask
 
 from .extensions import db, login_manager
@@ -9,14 +10,23 @@ from .view import bp
 def create_app():
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
+    load_dotenv()
+
     app = Flask(
         __name__,
         template_folder=os.path.join(BASE_DIR, "templates"),
-        static_folder=os.path.join(BASE_DIR, "static")
+        static_folder=os.path.join(BASE_DIR, "static"),
+        instance_relative_config=True,
     )
-    app.config["SECRET_KEY"] = "supersecretkey"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///nettools.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback-secret")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+        "SQLALCHEMY_DATABASE_URI",
+        "sqlite:///nettools.db",
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = (
+        os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False") == "True"
+    )
 
     db.init_app(app)
     login_manager.init_app(app)
