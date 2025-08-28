@@ -1,7 +1,9 @@
+import os
+
 from flask import Flask
+
 from .extensions import db, login_manager
 from .view import bp
-import os
 
 
 def create_app():

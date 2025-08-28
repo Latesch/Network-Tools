@@ -1,14 +1,15 @@
-from .networktools import ping_host, traceroute_host, nslookup
-from .networktools import ssh_command, telnet_command
-from flask import Blueprint, render_template, redirect, url_for, flash
-from flask import request, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, Log
-from .app import db, login_manager
 import ipaddress
-import socket
 import re
+import socket
 
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, url_for)
+from flask_login import current_user, login_required, login_user, logout_user
+
+from .app import db, login_manager
+from .models import Log, User
+from .networktools import (nslookup, ping_host, ssh_command, telnet_command,
+                           traceroute_host)
 
 bp = Blueprint("main", __name__)
 

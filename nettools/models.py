@@ -1,9 +1,11 @@
-from .extensions import db
+from datetime import datetime
+
+from flask_login import UserMixin
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import Mapped, mapped_column
-from flask_login import UserMixin
-from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from .extensions import db
 
 
 class User(UserMixin, db.Model):

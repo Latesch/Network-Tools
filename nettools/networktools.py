@@ -1,11 +1,12 @@
-from pythonping import ping
-import paramiko
-import telnetlib
-import subprocess
-import time
-import sys
+import asyncio
 import re
+import subprocess
+import sys
+import time
 
+import paramiko
+import telnetlib3
+from pythonping import ping
 
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
@@ -254,7 +255,7 @@ def telnet_command(
     timeout: int = 5
 ) -> tuple[str, str]:
     """
-    Выполняет Telnet-подключение и выполнение команды.
+    Выполняет Telnet-подключение и выполнение команды (async).
 
 
     Args:
@@ -270,52 +271,49 @@ def telnet_command(
     Returns:
     tuple[str, str]: (результат выполнения, статус: "ok" или "danger").
     """
-    tn = None
-    try:
-        tn = telnetlib.Telnet(host, port, timeout)
+    async def run_telnet():
+        reader, writer = await telnetlib3.open_connection(
+            host, port=port, connect_minwait=0.5, connect_maxwait=1.0
+        )
+        try:
+            await reader.readuntil(":", timeout=timeout)
+            writer.write(username + "\n")
 
-        idx, _, _ = tn.expect([b"login: ", b"Login: ", b"Username: "], timeout)
-        if idx >= 0:
-            tn.write(username.encode("utf-8") + b"\r")
+            await reader.readuntil(":", timeout=timeout)
+            writer.write(password + "\n")
 
-        idx, _, _ = tn.expect([b"Password: ", b"password: "], timeout)
-        if idx >= 0:
-            tn.write(password.encode("utf-8") + b"\r")
+            if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
+                for prep_cmd in PAGING_COMMANDS[model.lower()]:
+                    writer.write(prep_cmd + "\n")
+                    await asyncio.sleep(0.3)
 
-        if model.lower() in PAGING_COMMANDS and model.lower() != "linux":
-            for cmd in PAGING_COMMANDS[model.lower()]:
-                tn.write(cmd.encode("utf-8") + b"\r")
-                time.sleep(0.5)
-                tn.read_very_eager()
+            writer.write(command + "\n")
 
-        tn.write(command.encode("utf-8") + b"\r")
-        buffer = ""
-        end_markers = [b"#", b">", b"$"]
-        start_time = time.time()
-
-        while True:
-            chunk = tn.read_very_eager().decode("utf-8", errors="ignore")
-            if chunk:
-                buffer += chunk
-                if any(
-                    buffer.strip().endswith(m.decode())
-                    for m in end_markers
-                ):
+            buffer = ""
+            while True:
+                try:
+                    chunk = await asyncio.wait_for(
+                        reader.read(1024),
+                        timeout=1,
+                    )
+                except asyncio.TimeoutError:
                     break
-            if time.time() - start_time > timeout:
-                break
-            time.sleep(0.1)
+                if not chunk:
+                    break
+                buffer += chunk
+                if any(buffer.strip().endswith(m) for m in ["#", ">", "$"]):
+                    break
 
-        clean_output = ANSI_ESCAPE.sub("", buffer)
-        lines = clean_output.strip().splitlines()
-        if lines and command.split()[0] in lines[0]:
-            lines = lines[1:]
+            clean_output = ANSI_ESCAPE.sub("", buffer).strip()
+            return clean_output, "ok"
 
-        return "\n".join(lines).strip(), "ok"
+        finally:
+            writer.close()
+            await writer.wait_closed()
 
+    try:
+        return asyncio.run(asyncio.wait_for(run_telnet(), timeout=timeout))
+    except asyncio.TimeoutError:
+        return "Telnet error: session timeout", "danger"
     except Exception as e:
         return f"Telnet error: {e}", "danger"
-
-    finally:
-        if tn:
-            tn.close()
