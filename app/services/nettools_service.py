@@ -1,5 +1,7 @@
 import asyncio
+import ipaddress
 import re
+import socket
 import subprocess
 import sys
 import time
@@ -8,6 +10,8 @@ from contextlib import closing
 import paramiko
 import telnetlib3
 from pythonping import ping
+
+from app.services import logs_service
 
 ANSI_ESCAPE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
@@ -20,6 +24,128 @@ PAGING_COMMANDS = {
         "terminal length 0",
     ],
 }
+
+
+def valid_ip(target: str) -> bool:
+    """
+    Проверяет корректность IP-адреса или доменного имени.
+
+    Args:
+        target (str): IP-адрес или доменное имя.
+
+    Returns:
+        bool: True, если target корректный IP или hostname.
+    """
+    try:
+        ipaddress.ip_address(target)
+        return True
+    except ValueError:
+        if len(target) > 253 or not re.match(r"^[a-zA-Z0-9.-]+$", target):
+            return False
+        try:
+            socket.gethostbyname(target)
+            return True
+        except socket.error:
+            return False
+
+
+def run_commands(action: str, **kwargs) -> tuple[str, str]:
+    """
+    Выполняет сетевую команду по её имени и сохраняет результат в логи.
+
+    Args:
+        action (str): Тип действия ("ping", "traceroute", "nslookup").
+        **kwargs: Параметры команды.
+
+    Returns:
+        tuple[str, str]: (результат, статус).
+    """
+    host = kwargs.get("host", "unknown")
+    params = {k: v for k, v in kwargs.items() if k != "password"}
+
+    match action.lower():
+        case "ping":
+            output, status = ping_host(
+                kwargs.get("host"),
+                count=kwargs.get("count", 4),
+                timeout=kwargs.get("timeout", 1),
+            )
+        case "traceroute":
+            output, status = traceroute_host(
+                kwargs.get("host"),
+                max_hops=kwargs.get("max_hops", 15),
+                timeout=kwargs.get("timeout", 1),
+                queries=kwargs.get("queries", 1),
+            )
+        case "nslookup":
+            output, status = nslookup(
+                kwargs.get("host"),
+                qtype=kwargs.get("qtype", "A"),
+                dns_server=kwargs.get("dns_server", "8.8.8.8"),
+                timeout=kwargs.get("timeout", 2),
+            )
+        case _:
+            output, status = f"Неизвестная команда: {action}", "danger"
+
+    logs_service.create_log(
+        action=action,
+        host=host,
+        params=params,
+        status=status,
+        output=str(output),
+    )
+
+    return output, status
+
+
+def run_connect(protocol: str, **kwargs) -> tuple[str, str]:
+    """
+    Устанавливает подключение по SSH или Telnet, выполняет команду
+    и сохраняет результат в логи.
+
+    Args:
+        protocol (str): Протокол подключения ("ssh" или "telnet").
+        **kwargs: Параметры подключения и команды.
+
+    Returns:
+        tuple[str, str]: (результат, статус).
+    """
+    host = kwargs.get("host", "unknown")
+    params = {k: v for k, v in kwargs.items() if k != "password"}
+
+    match protocol.lower():
+        case "ssh":
+            output, status = ssh_command(
+                kwargs.get("host"),
+                kwargs.get("username"),
+                kwargs.get("password"),
+                kwargs.get("command"),
+                model=kwargs.get("model", "cisco"),
+                port=kwargs.get("port", 22),
+                timeout=kwargs.get("timeout", 5),
+            )
+        case "telnet":
+            output, status = telnet_command(
+                kwargs.get("host"),
+                kwargs.get("username"),
+                kwargs.get("password"),
+                kwargs.get("command"),
+                model=kwargs.get("model", "cisco"),
+                port=kwargs.get("port", 23),
+                timeout=kwargs.get("timeout", 5),
+            )
+        case _:
+            output, status = f"Неизвестный протокол: {protocol}", "danger"
+
+    logs_service.create_log(
+        action=protocol,
+        host=host,
+        params=params,
+        status=status,
+        output=str(output),
+    )
+
+    return output, status
 
 
 def ping_host(
@@ -248,7 +374,10 @@ def ssh_command(
                             errors="ignore",
                         )
                         buffer += chunk
-                        if any(buffer.strip().endswith(m) for m in end_markers):
+                        ends_with_marker = (
+                            buffer.strip().endswith(m) for m in end_markers
+                        )
+                        if any(ends_with_marker):
                             break
                     if time.time() - start_time > timeout:
                         break
