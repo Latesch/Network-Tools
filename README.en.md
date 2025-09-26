@@ -8,6 +8,7 @@ It allows you to run basic network commands through a web interface:
   * `Ping` with configurable parameters (packet count, timeout, etc.);
   * `Traceroute` with customizable options;
   * `NSLookup` with record type and DNS server selection.
+  * Device connection via **SSH** and **Telnet**.
 
 * **Modern interface**:
 
@@ -115,17 +116,34 @@ Now the server will run on port `8080`:
 ```
 Network-Tools/
 │
-├── nettools/
-│   ├── app.py              # Flask app factory (create_app)
-│   ├── extensions.py       # Extensions (db, login_manager, etc.)
-│   ├── models.py           # SQLAlchemy models (User, Log)
-│   ├── view.py             # Main routes (Blueprint "main")
-│   └── nettools.py         # Logic for ping/traceroute/ssh/telnet
+├── app/
+│   ├── infrastructure/           # Infrastructure layer
+│   │   ├── config.py             # Configuration (.env, .flaskenv)
+│   │   ├── db.py                 # SQLAlchemy database setup
+│   │   └── extensions.py         # Flask extensions (db, login_manager, etc.)
+│   │
+│   ├── models/                   # SQLAlchemy models
+│   │   ├── user.py
+│   │   └── log.py
+│   │
+│   ├── interfaces/               # Interfaces (controllers, repositories)
+│   │   ├── controllers/          # Flask routes
+│   │   │   └── main_controller.py
+│   │   └── repositories/         # Database repositories
+│   │       ├── user_repo.py
+│   │       └── logs_repo.py
+│   │
+│   ├── services/                 # Business logic
+│   │   ├── user_service.py
+│   │   ├── logs_service.py
+│   │   └── nettools_service.py
+│   │
+│   └── app.py                    # Flask app factory (create_app)
 │
-├── instance/               # Local data (ignored by Git)
-│   └── nettools.db         # SQLite database
+├── instance/                     # Local data (ignored by Git)
+│   └── nettools.db               # SQLite database
 │
-├── templates/              # HTML templates (Jinja2)
+├── templates/                    # HTML templates (Jinja2)
 │   ├── base.html
 │   ├── index.html
 │   ├── login.html
@@ -135,16 +153,16 @@ Network-Tools/
 │   ├── history_detail.html
 │   └── users.html
 │
-├── static/                 # Static files (CSS, JS)
+├── static/                       # Static files (CSS, JS)
 │   ├── apple-touch-icon.png
 │   ├── favicon.png
 │   ├── favicon.ico
 │   └── style.css
 │
-├── requirements.txt        # Dependencies
-├── .flaskenv               # Flask settings
-├── CONTRIBUTING.md         # Contribution guide
-└── README.md               # Project documentation
+├── requirements.txt              # Dependencies
+├── .flaskenv                     # Flask environment variables
+├── CONTRIBUTING.md               # Contribution guide
+└── README.md                     # Project documentation
 ```
 
 ---
@@ -204,7 +222,7 @@ The app uses **Flask-Login** for authentication and session management.
 * SQLAlchemy (SQLite)
 * Bootstrap (via CDN)
 * PythonPing / Subprocess
-* Paramiko + telnetlib
+* Paramiko + telnetlib3
 * Werkzeug (password hashing)
 
 ---

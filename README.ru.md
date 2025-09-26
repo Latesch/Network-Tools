@@ -8,6 +8,7 @@
   * `Ping` с настраиваемыми параметрами (количество пакетов, таймаут и др.);
   * `Traceroute` с выбором опций;
   * `NSLookup` с выбором типа записи и DNS-сервера.
+  * Подключение к устройствам по **SSH** и **Telnet**.
 
 * **Современный интерфейс**:
 
@@ -116,17 +117,34 @@ flask run --host=0.0.0.0 --port=8080
 ```
 Network-Tools/
 │
-├── nettools/
-│   ├── app.py              # Фабрика Flask-приложения (create_app)
-│   ├── extensions.py       # Подключение расширений (db, login_manager и др.)
-│   ├── models.py           # SQLAlchemy модели (User, Log)
-│   ├── view.py             # Основные маршруты (Blueprint "main")
-│   └── nettools.py         # Логика ping/traceroute/ssh/telnet
+├── app/
+│   ├── infrastructure/           # Инфраструктурный слой
+│   │   ├── config.py             # Конфигурация (env, flaskenv)
+│   │   ├── db.py                 # Работа с SQLAlchemy
+│   │   └── extensions.py         # Flask-Login, расширения
+│   │
+│   ├── models/                   # SQLAlchemy модели
+│   │   ├── user.py
+│   │   └── log.py
+│   │
+│   ├── interfaces/               # Внешний слой (контроллеры, репозитории)
+│   │   ├── controllers/          # Flask view-функции (роуты)
+│   │   │   └── main_controller.py
+│   │   └── repositories/         # Репозитории работы с БД
+│   │       ├── user_repo.py
+│   │       └── logs_repo.py
+│   │
+│   ├── services/                 # Бизнес-логика
+│   │   ├── user_service.py
+│   │   ├── logs_service.py
+│   │   └── nettools_service.py
+│   │
+│   └── app.py                    # Фабрика Flask-приложения (create_app)
 │
-├── instance/               # Локальные данные (игнорируется Git)
-│   └── nettools.db         # База данных SQLite
+├── instance/                     # Локальные данные (игнорируется Git)
+│   └── nettools.db               # База данных SQLite
 │
-├── templates/              # HTML-шаблоны (Jinja2)
+├── templates/                    # HTML-шаблоны (Jinja2)
 │   ├── base.html
 │   ├── index.html
 │   ├── login.html
@@ -136,16 +154,16 @@ Network-Tools/
 │   ├── history_detail.html
 │   └── users.html
 │
-├── static/                 # Статические файлы (CSS, JS)
+├── static/                       # Статические файлы (CSS, JS)
 │   ├── apple-touch-icon.png
 │   ├── favicon.png
 │   ├── favicon.ico
 │   └── style.css
 │
-├── requirements.txt        # Список зависимостей
-├── .flaskenv               # Настройки Flask
-├── CONTRIBUTING.md         # Руководство для разработчиков
-└── README.md               # Документация проекта
+├── requirements.txt              # Зависимости
+├── .flaskenv                     # Flask настройки
+├── CONTRIBUTING.md               # Руководство для разработчиков
+└── README.ru.md                  # Документация проекта
 ```
 
 ---
@@ -203,7 +221,7 @@ Network-Tools/
 * SQLAlchemy (SQLite)
 * Bootstrap (через CDN)
 * PythonPing / Subprocess
-* Paramiko + telnetlib
+* Paramiko + telnetlib3
 * Werkzeug (для хэширования паролей)
 
 ---
