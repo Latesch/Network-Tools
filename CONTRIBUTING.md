@@ -1,9 +1,11 @@
-## 🤝 Contributing Guide
+## 🤝 Contributing Guide (RU)
 
 Спасибо, что хотите помочь развивать проект! 🚀
 
 ### 📌 Основные правила
+
 * Все новые фичи и багфиксы — **в отдельных ветках**:
+
   ```bash
   git checkout -b feature/my-feature
   git checkout -b fix/my-bug
@@ -14,13 +16,14 @@
   ```bash
   flake8
   ```
+
 * Пишите понятные коммиты:
 
   * `feat: добавил ...`
   * `fix: исправил ...`
   * `docs: обновил ...`
 
-### 🔀 Pull Requests
+### 🔀 Pull Requests (RU)
 
 1. Форкните репозиторий и сделайте изменения в отдельной ветке.
 2. Запустите проект и убедитесь, что он работает.
@@ -29,11 +32,12 @@
    ```bash
    flake8
    ```
+
 4. Откройте PR в `main` с описанием изменений.
 
 ---
 
-## 🤝 Contributing Guide
+## 🤝 Contributing Guide (EN)
 
 Thank you for contributing! 🚀
 
@@ -45,18 +49,20 @@ Thank you for contributing! 🚀
   git checkout -b feature/my-feature
   git checkout -b fix/my-bug
   ```
+
 * Before opening a PR, check code style:
 
   ```bash
   flake8
   ```
+
 * Use clear commit messages:
 
   * `feat: added ...`
   * `fix: fixed ...`
   * `docs: updated ...`
 
-### 🔀 Pull Requests
+### 🔀 Pull Requests (EN)
 
 1. Fork the repository and create a new branch.
 2. Run the project and ensure everything works.
@@ -65,4 +71,5 @@ Thank you for contributing! 🚀
    ```bash
    flake8
    ```
+
 4. Open a PR into `main` with a description of your changes.

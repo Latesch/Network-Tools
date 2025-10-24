@@ -58,6 +58,7 @@ Activate:
   ```bash
   source .venv/bin/activate
   ```
+
 * Windows (cmd):
 
   ```cmd
@@ -113,7 +114,7 @@ Now the server will run on port `8080`:
 
 ## 📂 Project Structure
 
-```
+```text
 Network-Tools/
 │
 ├── app/
