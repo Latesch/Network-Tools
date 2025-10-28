@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 from contextlib import closing
+from typing import Dict, List, Tuple
 
 import paramiko
 import telnetlib3
@@ -115,15 +116,35 @@ def run_connect(protocol: str, **kwargs) -> tuple[str, str]:
 
     match protocol.lower():
         case "ssh":
-            output, status = ssh_command(
-                kwargs.get("host"),
-                kwargs.get("username"),
-                kwargs.get("password"),
-                kwargs.get("command"),
-                model=kwargs.get("model", "cisco"),
-                port=kwargs.get("port", 22),
-                timeout=kwargs.get("timeout", 5),
-            )
+            jumphosts = kwargs.get("jumphosts")
+            if jumphosts and isinstance(jumphosts, list):
+                dest = {
+                    "host": host,
+                    "username": kwargs.get("username"),
+                    "password": kwargs.get("password"),
+                }
+                try:
+                    output, status = ssh_via_jumphost(
+                        jumphosts,
+                        dest,
+                        kwargs.get("command"),
+                        model=kwargs.get("model", "cisco"),
+                        port=kwargs.get("port", 22),
+                        timeout=kwargs.get("timeout", 5),
+                    )
+                except Exception as e:
+                    return f"JumpHost error: {e}", "danger"
+            else:
+                output, status = ssh_command(
+                    kwargs.get("host"),
+                    kwargs.get("username"),
+                    kwargs.get("password"),
+                    kwargs.get("command"),
+                    model=kwargs.get("model", "cisco"),
+                    port=kwargs.get("port", 22),
+                    timeout=kwargs.get("timeout", 5),
+                )
+
         case "telnet":
             output, status = telnet_command(
                 kwargs.get("host"),
@@ -467,3 +488,112 @@ def telnet_command(
         return "Telnet error: session timeout", "danger"
     except Exception as e:
         return f"Telnet error: {e}", "danger"
+
+
+def ssh_via_jumphost(
+    jump_chain: List[Dict[str, str]],
+    dest: Dict[str, str],
+    command: str,
+    model: str = "cisco",
+    port: int = 22,
+    timeout: int = 5,
+) -> Tuple[str, str]:
+    """
+    Подключение к целевому устройству через один или несколько jump host'ов.
+    Поддерживает рекурсивную схему переходов:
+        localhost → jumphost1 → jumphost2 → ... → destination
+
+    Args:
+        jump_chain (List[Dict[str, str]]): Список промежуточных хостов.
+            Пример:
+            [
+            {"host": "192.168.1.1", "username": "jump1", "password": "pass1"},
+            {"host": "10.0.0.5", "username": "jump2", "password": "pass2"},
+            ]
+        dest (Dict[str, str]): Конечное устройство.
+            {"host": "10.0.0.10", "username": "admin", "password": "secret"}
+        command (str): Команда для выполнения на конечном устройстве.
+        model (str): Вендор (Cisco, Huawei и т.д.).
+        port (int): SSH порт.
+        timeout (int): Таймаут подключения.
+
+    Returns:
+        Tuple[str, str]: (output, status)
+    """
+    try:
+        current_jump = jump_chain[0]
+        jump_client = paramiko.SSHClient()
+        jump_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        jump_client.connect(
+            current_jump["host"],
+            port=current_jump.get("port", 22),
+            username=current_jump["username"],
+            password=current_jump["password"],
+            timeout=timeout,
+        )
+
+        if len(jump_chain) > 1:
+            next_jump_chain = jump_chain[1:]
+            next_host = next_jump_chain[0]
+
+            transport = jump_client.get_transport()
+            chan = transport.open_channel(
+                "direct-tcpip",
+                (next_host["host"], next_host.get("port", 22)),
+                ("127.0.0.1", 0),
+            )
+
+            with paramiko.SSHClient() as inner_client:
+                inner_client.set_missing_host_key_policy(
+                    paramiko.AutoAddPolicy()
+                )
+                inner_client.connect(
+                    next_host["host"],
+                    username=next_host["username"],
+                    password=next_host["password"],
+                    sock=chan,
+                    timeout=timeout,
+                )
+
+                return ssh_via_jumphost(
+                    next_jump_chain, dest, command, model, port, timeout
+                )
+
+        else:
+            transport = jump_client.get_transport()
+            chan = transport.open_channel(
+                "direct-tcpip",
+                (dest["host"], dest.get("port", 22)),
+                ("127.0.0.1", 0),
+            )
+
+            with paramiko.SSHClient() as dest_client:
+                dest_client.set_missing_host_key_policy(
+                    paramiko.AutoAddPolicy()
+                )
+                dest_client.connect(
+                    dest["host"],
+                    username=dest["username"],
+                    password=dest["password"],
+                    sock=chan,
+                    timeout=timeout,
+                )
+
+                stdin, stdout, stderr = dest_client.exec_command(
+                    command, timeout=timeout
+                )
+                output = stdout.read().decode("utf-8") + stderr.read().decode(
+                    "utf-8"
+                )
+
+        return output, "ok"
+
+    except Exception as e:
+        return f"Ошибка при подключении через jumphost: {e}", "danger"
+
+    finally:
+        try:
+            jump_client.close()
+        except Exception:
+            pass

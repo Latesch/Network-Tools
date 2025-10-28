@@ -7,7 +7,7 @@
     <i class="bi bi-plug-fill me-2"></i> Подключение к устройству
   </h2>
 
-  <form method="post">
+  <form method="post" id="connect-form">
     <div class="mb-3">
       <label for="protocol" class="form-label">
         <i class="bi bi-diagram-2-fill me-1"></i> Протокол
@@ -23,35 +23,48 @@
         <i class="bi bi-hdd-network me-1"></i> Вендор
       </label>
       <select name="model" id="model" class="form-select">
-        <option value="cisco" {% if request.form.get('model') == 'cisco' %}selected{% endif %}>Cisco</option>
-        <option value="huawei" {% if request.form.get('model') == 'huawei' %}selected{% endif %}>Huawei</option>
-        <option value="eltex" {% if request.form.get('model') == 'eltex' %}selected{% endif %}>Eltex</option>
-        <option value="ecorouter" {% if request.form.get('model') == 'ecorouter' %}selected{% endif %}>EcoRouter</option>
-        <option value="linux" {% if request.form.get('model') == 'linux' %}selected{% endif %}>Linux</option>
+        <option value="cisco">Cisco</option>
+        <option value="huawei">Huawei</option>
+        <option value="eltex">Eltex</option>
+        <option value="ecorouter">EcoRouter</option>
+        <option value="linux">Linux</option>
       </select>
     </div>
 
     <div class="mb-3">
       <label for="host" class="form-label">
-        <i class="bi bi-pc-display me-1"></i> Хост
+        <i class="bi bi-pc-display me-1"></i> Целевой хост
       </label>
       <input type="text" name="host" id="host" class="form-control"
              value="{{ request.form.get('host', '') }}" placeholder="192.168.1.1" required>
     </div>
 
     <div class="mb-3">
-      <label for="username" class="form-label">
-        <i class="bi bi-person-fill me-1"></i> Логин
+      <label class="form-label">
+        <i class="bi bi-shuffle me-1"></i> JumpHosts (Промежуточные узлы)
       </label>
-      <input type="text" name="username" id="username" class="form-control"
-             value="{{ request.form.get('username', '') }}" required>
+
+      <div id="jumphosts-container"></div>
+
+      <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-jumphost">
+        <i class="bi bi-plus-circle me-1"></i> Добавить узел
+      </button>
     </div>
 
-    <div class="mb-3">
-      <label for="password" class="form-label">
-        <i class="bi bi-lock-fill me-1"></i> Пароль
-      </label>
-      <input type="password" name="password" id="password" class="form-control" required>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="username" class="form-label">
+          <i class="bi bi-person-fill me-1"></i> Логин
+        </label>
+        <input type="text" name="username" id="username" class="form-control"
+               value="{{ request.form.get('username', '') }}" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="password" class="form-label">
+          <i class="bi bi-lock-fill me-1"></i> Пароль
+        </label>
+        <input type="password" name="password" id="password" class="form-control" required>
+      </div>
     </div>
 
     <div class="mb-3">
@@ -59,7 +72,7 @@
         <i class="bi bi-terminal-fill me-1"></i> Команда
       </label>
       <input type="text" name="command" id="command" class="form-control"
-             placeholder="Например: show system"
+             placeholder="Например: show version"
              value="{{ request.form.get('command', '') }}" required>
     </div>
 
@@ -82,6 +95,34 @@
 </div>
 
 <script>
+document.getElementById("add-jumphost").addEventListener("click", () => {
+  const container = document.getElementById("jumphosts-container");
+  const index = container.children.length;
+
+  const block = document.createElement("div");
+  block.className = "border rounded p-3 mb-2 bg-light";
+  block.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <strong>JumpHost ${index + 1}</strong>
+      <button type="button" class="btn-close btn-sm" aria-label="Удалить"></button>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-2">
+        <input type="text" class="form-control" name="jumphosts[${index}][host]" placeholder="Хост" required>
+      </div>
+      <div class="col-md-4 mb-2">
+        <input type="text" class="form-control" name="jumphosts[${index}][username]" placeholder="Логин" required>
+      </div>
+      <div class="col-md-4 mb-2">
+        <input type="password" class="form-control" name="jumphosts[${index}][password]" placeholder="Пароль" required>
+      </div>
+    </div>
+  `;
+
+  block.querySelector(".btn-close").addEventListener("click", () => block.remove());
+  container.appendChild(block);
+});
+
 function copyResult() {
   const text = document.querySelector("#result-output").innerText;
   navigator.clipboard.writeText(text).then(() => {

@@ -1,4 +1,12 @@
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.infrastructure.extensions import login_manager
@@ -169,6 +177,7 @@ def export_json():
 @login_required
 def connect():
     result, status = None, None
+
     if request.method == "POST":
         protocol = request.form.get("protocol")
         host = request.form.get("host")
@@ -177,6 +186,22 @@ def connect():
         command = request.form.get("command")
         model = request.form.get("model", "cisco")
 
+        jumphosts = []
+        for key in request.form:
+            if key.startswith("jumphosts[") and key.endswith("][host]"):
+                index = key.split("[")[1].split("]")[0]
+                jh_host = request.form.get(f"jumphosts[{index}][host]")
+                jh_user = request.form.get(f"jumphosts[{index}][username]")
+                jh_pass = request.form.get(f"jumphosts[{index}][password]")
+                if jh_host and jh_user and jh_pass:
+                    jumphosts.append(
+                        {
+                            "host": jh_host,
+                            "username": jh_user,
+                            "password": jh_pass,
+                        }
+                    )
+
         result, status = run_connect(
             protocol,
             host=host,
@@ -184,6 +209,11 @@ def connect():
             password=password,
             command=command,
             model=model,
+            jumphosts=jumphosts,
         )
 
-    return render_template("connect.html", output=result, status=status)
+    return render_template(
+        "connect.html",
+        output=result,
+        status=status,
+    )
