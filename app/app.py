@@ -4,7 +4,7 @@ from flask import Flask
 
 from app.infrastructure.config import load_config
 from app.infrastructure.db import init_db
-from app.infrastructure.extensions import db, login_manager
+from app.infrastructure.extensions import db, login_manager, migrate
 from app.interfaces.controllers.main_controller import bp
 
 
@@ -28,7 +28,11 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    init_db(app)
+    if app.config.get("MIGRATIONS_ENABLED"):
+        migrate.init_app(app, db)
+    else:
+        with app.app_context():
+            db.create_all()
 
     app.register_blueprint(bp)
 

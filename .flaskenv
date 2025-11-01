@@ -6,3 +6,5 @@ SECRET_KEY=supersecretkey
 
 SQLALCHEMY_DATABASE_URI=sqlite:///../instance/nettools.db
 SQLALCHEMY_TRACK_MODIFICATIONS=False
+
+MIGRATIONS_ENABLED=1

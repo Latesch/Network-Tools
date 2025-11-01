@@ -20,4 +20,5 @@ def load_config():
             "SQLALCHEMY_TRACK_MODIFICATIONS", "False"
         )
         == "True",
+        "MIGRATIONS_ENABLED": os.getenv("MIGRATIONS_ENABLED", "0") == "1",
     }
