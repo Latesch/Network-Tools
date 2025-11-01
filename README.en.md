@@ -7,8 +7,9 @@ It allows you to run basic network commands through a web interface:
 
   * `Ping` with configurable parameters (packet count, timeout, etc.);
   * `Traceroute` with customizable options;
-  * `NSLookup` with record type and DNS server selection.
-  * Device connection via **SSH** and **Telnet**.
+  * `NSLookup` with record type and DNS server selection;
+  * Device connection via **SSH** and **Telnet**;
+  * Jumphost support for chained connections.
 
 * **Modern interface**:
 
@@ -28,11 +29,7 @@ It allows you to run basic network commands through a web interface:
   * authentication and registration via Flask-Login;
   * password hashing;
   * user roles (**user** / **admin**);
-  * access control:
-
-    * guest → only execute commands,
-    * authenticated user → execute commands and manage logs,
-    * admin → all user features plus user management.
+  * access control.
 
 ---
 
@@ -47,23 +44,19 @@ cd Network-Tools
 
 ### 2. Create a virtual environment
 
+#### Linux / macOS
+
 ```bash
 python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-Activate:
+#### Windows (cmd)
 
-* Linux/macOS:
-
-  ```bash
-  source .venv/bin/activate
-  ```
-
-* Windows (cmd):
-
-  ```cmd
-  .venv\Scripts\activate
-  ```
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
+```
 
 ### 3. Upgrade pip
 
@@ -211,7 +204,6 @@ The app uses **Flask-Login** for authentication and session management.
 * Inventory database (auto-inventory);
 * SNMP/NetFlow integration;
 * Network diagram/topology visualization;
-* Jumphost support;
 * OpenAPI.json.
 
 ---
@@ -219,7 +211,7 @@ The app uses **Flask-Login** for authentication and session management.
 ## 🛠 Technologies
 
 * Python 3.x
-* Flask + Flask-Login
+* Flask + Flask-Login + Flask-SQLAlchemy
 * SQLAlchemy (SQLite)
 * Bootstrap (via CDN)
 * PythonPing / Subprocess
@@ -236,6 +228,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 👤 Author
 
-This project was created for practicing Python and Flask.
 Author: **Late**
 [Telegram @Latesch](https://t.me/Latesch)
