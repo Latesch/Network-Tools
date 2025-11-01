@@ -27,6 +27,36 @@ PAGING_COMMANDS = {
 }
 
 
+def mask_sensitive_values(data):
+    """
+    Рекурсивно заменяет чувствительные данные (пароли, токены и т.д.)
+    на звёздочки в структурах dict / list.
+    """
+    SENSITIVE_KEYS = {
+        "password",
+        "pass",
+        "passwd",
+        "pwd",
+        "secret",
+        "token",
+        "key",
+    }
+
+    if isinstance(data, dict):
+        clean = {}
+        for k, v in data.items():
+            if any(word in k.lower() for word in SENSITIVE_KEYS):
+                clean[k] = "******"
+            else:
+                clean[k] = mask_sensitive_values(v)
+        return clean
+
+    if isinstance(data, list):
+        return [mask_sensitive_values(v) for v in data]
+
+    return data
+
+
 def valid_ip(target: str) -> bool:
     """
     Проверяет корректность IP-адреса или доменного имени.
@@ -112,7 +142,7 @@ def run_connect(protocol: str, **kwargs) -> tuple[str, str]:
         tuple[str, str]: (результат, статус).
     """
     host = kwargs.get("host", "unknown")
-    params = {k: v for k, v in kwargs.items() if k != "password"}
+    safe_params = mask_sensitive_values(kwargs)
 
     match protocol.lower():
         case "ssh":
@@ -161,7 +191,7 @@ def run_connect(protocol: str, **kwargs) -> tuple[str, str]:
     logs_service.create_log(
         action=protocol,
         host=host,
-        params=params,
+        params=safe_params,
         status=status,
         output=str(output),
     )
