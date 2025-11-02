@@ -13,12 +13,12 @@ def create_app():
     Фабрика Flask-приложения.
     Загружает конфигурацию, инициализирует расширения, регистрирует blueprints.
     """
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    base_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
     app = Flask(
         __name__,
-        template_folder=os.path.join(BASE_DIR, "templates"),
-        static_folder=os.path.join(BASE_DIR, "static"),
+        template_folder=os.path.join(base_dir, "templates"),
+        static_folder=os.path.join(base_dir, "static"),
         instance_relative_config=True,
     )
 

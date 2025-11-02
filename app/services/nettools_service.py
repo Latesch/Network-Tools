@@ -1,15 +1,15 @@
 import asyncio
+from contextlib import closing
 import ipaddress
 import re
 import subprocess
 import sys
 import time
-from contextlib import closing
 from typing import Dict, List, Tuple
 
 import paramiko
-import telnetlib3
 from pythonping import ping
+import telnetlib3
 
 from app.services import logs_service
 
@@ -31,7 +31,7 @@ def mask_sensitive_values(data):
     Рекурсивно заменяет чувствительные данные (пароли, токены и т.д.)
     на звёздочки в структурах dict / list.
     """
-    SENSITIVE_KEYS = {
+    sensitive_keys = {
         "password",
         "pass",
         "passwd",
@@ -44,7 +44,7 @@ def mask_sensitive_values(data):
     if isinstance(data, dict):
         clean = {}
         for k, v in data.items():
-            if any(word in k.lower() for word in SENSITIVE_KEYS):
+            if any(word in k.lower() for word in sensitive_keys):
                 clean[k] = "******"
             else:
                 clean[k] = mask_sensitive_values(v)

@@ -7,10 +7,10 @@ def load_config():
     """
     Загружает конфигурацию из .flaskenv / .env файлов и переменных окружения.
     """
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    base_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     load_dotenv()
 
-    db_path = os.path.join(BASE_DIR, "..", "instance", "nettools.db")
+    db_path = os.path.join(base_dir, "..", "instance", "nettools.db")
     db_uri = f"sqlite:///{db_path}"
 
     return {
