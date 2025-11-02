@@ -1,5 +1,11 @@
 # NetTools Web
 
+![Python](https://img.shields.io/badge/python-3.13-blue.svg)  
+![Flask](https://img.shields.io/badge/flask-3.x-lightgrey.svg)  
+![CI/CD](https://github.com/Latesch/Network-Tools/actions/workflows/ci.yml/badge.svg)  
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)  
+![License](https://img.shields.io/github/license/Latesch/Network-Tools)
+
 A **Flask**-based web application with built-in network utilities.
 It allows you to run basic network commands through a web interface:
 
@@ -112,16 +118,16 @@ Network-Tools/
 │
 ├── app/
 │   ├── infrastructure/           # Infrastructure layer
-│   │   ├── config.py             # Configuration (.env, .flaskenv)
-│   │   ├── db.py                 # SQLAlchemy database setup
-│   │   └── extensions.py         # Flask extensions (db, login_manager, etc.)
+│   │   ├── config.py             # Config (env, flaskenv)
+│   │   ├── db.py                 # SQLAlchemy setup
+│   │   └── extensions.py         # Flask-Login, SQLAlchemy, migrations
 │   │
 │   ├── models/                   # SQLAlchemy models
 │   │   ├── user.py
 │   │   └── log.py
 │   │
-│   ├── interfaces/               # Interfaces (controllers, repositories)
-│   │   ├── controllers/          # Flask routes
+│   ├── interfaces/               # External layer (controllers, repositories)
+│   │   ├── controllers/          # Flask views (routes)
 │   │   │   └── main_controller.py
 │   │   └── repositories/         # Database repositories
 │   │       ├── user_repo.py
@@ -134,29 +140,29 @@ Network-Tools/
 │   │
 │   └── app.py                    # Flask app factory (create_app)
 │
+├── migrations/                   # Alembic migrations (created after init)
+│
+├── tests/                        # Unit tests
+│   ├── conftest.py
+│   ├── test_logs_service.py
+│   ├── test_nettools_service.py
+│   └── test_user_service.py
+│
 ├── instance/                     # Local data (ignored by Git)
 │   └── nettools.db               # SQLite database
 │
 ├── templates/                    # HTML templates (Jinja2)
-│   ├── base.html
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── connect.html
-│   ├── history.html
-│   ├── history_detail.html
-│   └── users.html
-│
-├── static/                       # Static files (CSS, JS)
-│   ├── apple-touch-icon.png
-│   ├── favicon.png
-│   ├── favicon.ico
-│   └── style.css
-│
-├── requirements.txt              # Dependencies
-├── .flaskenv                     # Flask environment variables
-├── CONTRIBUTING.md               # Contribution guide
-└── README.md                     # Project documentation
+├── static/                       # Static assets (CSS, JS)
+├── .github/workflows/ci.yml      # CI/CD (lint + tests)
+├── requirements/                 # Dependencies
+│   ├── dev.txt
+│   └── prod.txt
+├── pyproject.toml                # black formatter config
+├── .flake8                       # flake8 config
+├── .flaskenv                     # Flask environment
+├── CONTRIBUTING.md               # Contributing guide
+├── LICENSE                       # Apache 2.0 license
+└── README.md                     # English documentation
 ```
 
 ---
@@ -196,6 +202,34 @@ The app uses **Flask-Login** for authentication and session management.
 
 ---
 
+## 🔁 Migrations
+
+Migrations are implemented via **Flask-Migrate (Alembic)**:
+
+```bash
+flask db init      # initialize migrations
+flask db migrate   # create migration
+flask db upgrade   # apply changes
+```
+
+> Migrations are designed but not activated by default.
+
+---
+
+## 🧪 Testing
+
+Tests are automatically executed via CI/CD on GitHub Actions.  
+Run them locally:
+
+```bash
+pytest -v
+```
+
+Each test is **independent** — they don’t share state or data.  
+Unit tests focus on small, isolated features.
+
+---
+
 ## 📌 TODO (future improvements)
 
 * Integration with xtermjs;
@@ -223,6 +257,13 @@ The app uses **Flask-Login** for authentication and session management.
 ## 🤝 Contributing Guide
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## 🧩 License
+
+This project is licensed under the **Apache License 2.0**.  
+Copyright © 2025 **Late**
 
 ---
 

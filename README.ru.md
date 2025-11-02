@@ -1,5 +1,11 @@
 # NetTools Web
 
+![Python](https://img.shields.io/badge/python-3.13-blue.svg)  
+![Flask](https://img.shields.io/badge/flask-3.x-lightgrey.svg)  
+![CI/CD](https://github.com/Latesch/Network-Tools/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+![License](https://img.shields.io/github/license/Latesch/Network-Tools)
+
 Веб-приложение на **Flask** с сетевыми утилитами.
 Позволяет выполнять базовые сетевые команды через веб-интерфейс:
 
@@ -114,7 +120,7 @@ Network-Tools/
 │   ├── infrastructure/           # Инфраструктурный слой
 │   │   ├── config.py             # Конфигурация (env, flaskenv)
 │   │   ├── db.py                 # Работа с SQLAlchemy
-│   │   └── extensions.py         # Flask-Login, расширения
+│   │   └── extensions.py         # Flask-Login, SQLAlchemy, миграции
 │   │
 │   ├── models/                   # SQLAlchemy модели
 │   │   ├── user.py
@@ -133,29 +139,29 @@ Network-Tools/
 │   │   └── nettools_service.py
 │   │
 │   └── app.py                    # Фабрика Flask-приложения (create_app)
+|
+├── migrations/                   # Миграции Alembic (создаются при init)
 │
+├── tests/                        # Unit-тесты
+│   ├── conftest.py
+│   ├── test_logs_service.py
+│   ├── test_nettools_service.py
+│   └── test_user_service.py
+|
 ├── instance/                     # Локальные данные (игнорируется Git)
 │   └── nettools.db               # База данных SQLite
 │
 ├── templates/                    # HTML-шаблоны (Jinja2)
-│   ├── base.html
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── connect.html
-│   ├── history.html
-│   ├── history_detail.html
-│   └── users.html
-│
 ├── static/                       # Статические файлы (CSS, JS)
-│   ├── apple-touch-icon.png
-│   ├── favicon.png
-│   ├── favicon.ico
-│   └── style.css
-│
-├── requirements.txt              # Зависимости
+├── .github/workflows/ci.yml      # CI/CD (lint + test)
+├── requirements/                 # Зависимости
+│   ├── dev.txt
+│   └── prod.txt
+├── pyproject.toml                # Настройки black
+├── .flake8                       # Настройки flake8
 ├── .flaskenv                     # Flask настройки
 ├── CONTRIBUTING.md               # Руководство для разработчиков
+├── LICENSE                       # Apache 2.0
 └── README.ru.md                  # Документация проекта
 ```
 
@@ -194,6 +200,31 @@ Network-Tools/
 
 ---
 
+## 🔁 Миграции
+
+Миграции реализованы через **Flask-Migrate (Alembic)**:
+
+```bash
+flask db init      # первичная инициализация
+flask db migrate   # создать новую миграцию
+flask db upgrade   # применить изменения
+```
+
+> Пока миграции не активированы по умолчанию, но структура и поддержка уже встроены.
+
+---
+
+## 🧪 Тестирование
+
+Тесты выполняются автоматически при push или pull request.  
+Можно запустить вручную локально:
+
+```bash
+pytest -v
+```
+
+---
+
 ## 📌 TODO (идеи для развития)
 
 * Возможность подключения xtermjs;
@@ -221,6 +252,13 @@ Network-Tools/
 ## 🤝 Contributing guide
 
 [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## 🧩 Лицензия
+
+Проект распространяется под лицензией **Apache License 2.0**.  
+Copyright © 2025 **Late**
 
 ---
 
