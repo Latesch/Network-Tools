@@ -6,3 +6,4 @@ inline-quotes = double
 multiline-quotes = double
 docstring-quotes = double
 extend-select = N8,I,Q
+exclude = .venv,venv,__pycache__,migrations
