@@ -4,11 +4,12 @@ target-version = ["py313"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-  # directories
-  | \.git
+  \.git
+  | \.github
   | \.venv
-  | \migrations
+  | migrations
   | static
-  pycache
+  | instance
+  | pycache
 )/
 '''
