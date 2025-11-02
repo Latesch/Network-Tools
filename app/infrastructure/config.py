@@ -21,7 +21,9 @@ def load_config():
 
     return {
         "SECRET_KEY": os.getenv("SECRET_KEY", "fallback-secret"),
-        "SQLALCHEMY_DATABASE_URI": os.getenv("SQLALCHEMY_DATABASE_URI", db_uri),
+        "SQLALCHEMY_DATABASE_URI": os.getenv(
+            "SQLALCHEMY_DATABASE_URI", db_uri
+        ),
         "SQLALCHEMY_TRACK_MODIFICATIONS": os.getenv(
             "SQLALCHEMY_TRACK_MODIFICATIONS", "False"
         ).lower()
