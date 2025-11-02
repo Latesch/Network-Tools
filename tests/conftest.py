@@ -12,6 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 @pytest.fixture()
 def app():
     """Создаёт временное Flask-приложение и чистую БД для каждого теста."""
+    os.environ["TESTING"] = "1"
     app = create_app()
     app.config.update(
         TESTING=True,

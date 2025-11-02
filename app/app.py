@@ -22,6 +22,8 @@ def create_app():
         instance_relative_config=True,
     )
 
+    os.makedirs(app.instance_path, exist_ok=True)
+    
     config = load_config()
     app.config.update(config)
 
