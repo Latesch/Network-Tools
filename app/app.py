@@ -31,8 +31,7 @@ def create_app():
     if app.config.get("MIGRATIONS_ENABLED"):
         migrate.init_app(app, db)
     else:
-        with app.app_context():
-            db.create_all()
+        init_db(app)
 
     app.register_blueprint(bp)
 
