@@ -1,7 +1,6 @@
 import asyncio
 import ipaddress
 import re
-import socket
 import subprocess
 import sys
 import time
@@ -71,13 +70,22 @@ def valid_ip(target: str) -> bool:
         ipaddress.ip_address(target)
         return True
     except ValueError:
-        if len(target) > 253 or not re.match(r"^[a-zA-Z0-9.-]+$", target):
+        pass
+
+    if all(part.isdigit() for part in target.split(".")):
+        return False
+
+    target = target.rstrip(".")
+    if len(target) > 253:
+        return False
+
+    label_regex = re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$")
+    labels = target.split(".")
+    for label in labels:
+        if not label_regex.match(label):
             return False
-        try:
-            socket.gethostbyname(target)
-            return True
-        except socket.error:
-            return False
+
+    return True
 
 
 def run_commands(action: str, **kwargs) -> tuple[str, str]:
