@@ -2,7 +2,9 @@ venv/
 .venv/
 .vscode/
 __pycache__/
-*.pyc
 .pytest_cache/
+instance/
+*.pyc
 *.db
 .DS_Store
+.env

@@ -159,7 +159,8 @@ Network-Tools/
 │   └── prod.txt
 ├── pyproject.toml                # black formatter config
 ├── .flake8                       # flake8 config
-├── .flaskenv                     # Flask environment
+├── template.env                  # Template environment variables
+├── .env                          # Environment variables
 ├── CONTRIBUTING.md               # Contributing guide
 ├── LICENSE                       # Apache 2.0 license
 └── README.md                     # English documentation

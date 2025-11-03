@@ -2,8 +2,8 @@
 
 ![Python](https://img.shields.io/badge/python-3.13-blue.svg)  
 ![Flask](https://img.shields.io/badge/flask-3.x-lightgrey.svg)  
-![CI/CD](https://github.com/Latesch/Network-Tools/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+![CI/CD](https://github.com/Latesch/Network-Tools/actions/workflows/ci.yml/badge.svg)  
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)  
 ![License](https://img.shields.io/github/license/Latesch/Network-Tools)
 
 Веб-приложение на **Flask** с сетевыми утилитами.
@@ -72,11 +72,34 @@ pip install --upgrade pip
 
 ### 4. Установка зависимостей
 
+Зависимости разделены на несколько файлов:
+
+* **`requirements/prod.txt`** — минимальные зависимости для запуска проекта в production.
+* **`requirements/dev.txt`** — зависимости для разработки и тестирования (содержит `-r prod.txt`).
+
+Установка зависимостей для разработки:
+
 ```bash
-pip install -r requirements.txt
+pip install -r requirements/dev.txt
 ```
 
-### 5. Запуск приложения
+> Для установки только продовых зависимостей используйте `requirements/prod.txt`.
+
+### 5. Настройка переменных окружения
+
+В проекте используется файл `.env` для хранения конфиденциальных настроек.
+
+* Скопируйте файл-шаблон:
+
+```bash
+cp template.env .env
+```
+
+> **Windows:** используйте `copy template.env .env` в cmd или PowerShell.
+
+* Заполните значения в `.env` своими данными (например, `SECRET_KEY`, режим запуска приложения и т.п.).
+
+### 6. Запуск приложения
 
 #### Локальный запуск (разработка)
 
@@ -159,7 +182,8 @@ Network-Tools/
 │   └── prod.txt
 ├── pyproject.toml                # Настройки black
 ├── .flake8                       # Настройки flake8
-├── .flaskenv                     # Flask настройки
+├── template.env                  # Шаблон переменных окружения
+├── .env                          # Переменные окружения
 ├── CONTRIBUTING.md               # Руководство для разработчиков
 ├── LICENSE                       # Apache 2.0
 └── README.ru.md                  # Документация проекта
